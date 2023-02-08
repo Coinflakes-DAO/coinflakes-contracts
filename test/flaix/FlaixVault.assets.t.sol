@@ -13,10 +13,11 @@ contract FlaixVaultAssetManagementTest is Test {
 
   address manager = makeAddr("manager");
   address alice = makeAddr("alice");
+  address treasury = makeAddr("treasury");
 
   function setUp() public {
     vm.startPrank(manager);
-    vault = new FlaixVault();
+    vault = new FlaixVault(treasury);
     allowedAsset = new MockERC20("Allowed Mock ERC20", "ALLOWED");
     disallowedAsset = new MockERC20("Disallowed Mock ERC20", "DISALLOWED");
     vm.stopPrank();

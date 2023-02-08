@@ -10,10 +10,11 @@ contract FlaixVaultRoleAdminTest is Test {
 
   address manager = makeAddr("manager");
   address alice = makeAddr("alice");
+  address treasury = makeAddr("treasury");
 
   function setUp() public {
     vm.prank(manager);
-    vault = new FlaixVault();
+    vault = new FlaixVault(treasury);
   }
 
   function test_change_role_manager() public {
