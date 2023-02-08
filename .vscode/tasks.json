@@ -1,0 +1,12 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"command": "forge test -vv",
+			"problemMatcher": [],
+			"label": "forge: test",
+			"detail": "Run forge test command"
+		}
+	]
+}
