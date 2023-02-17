@@ -3,97 +3,90 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-import "../interfaces/IFlaixCallOption.sol";
+import "../interfaces/IFlaixOption.sol";
 import "../interfaces/IFlaixVault.sol";
-import "../interfaces/IFlaixVotes.sol";
 
-contract FlaixCallOption is ERC20, IFlaixCallOption {
+/// @title FlaixCallOption Contract
+/// @author Ned Albo
+/// @notice Contract for FlaixCallOptions. Call options are used to buy an
+///         underlying asset on behalf of the vault. If call options are
+///         issued, the issuer transfers a certain amount of underlying assets
+///         to the options contract and the vault mints a certain amount of
+///         shares, transferring them to the options contract. After that, the options
+///         contract holds both the shares and the underlying assets until the option
+///         matures. If on maturity, an option is exercised the options owner
+///         receives the shares and the vault receives the assets corresponding to the
+///         optionns owner share of the total supply of the options (pro rata).
+///         If instead the option owner decides to revoke the option, the vault
+///         burns the shares transfers the pro rata amount of the underlying assets
+///         to the option owner.
+contract FlaixCallOption is ERC20, IFlaixOption {
   using SafeERC20 for IERC20;
+  using SafeMath for uint256;
+
+  address public immutable asset;
 
   address public immutable vault;
-  address public immutable treasury;
-
-  address public immutable voteToken;
-  uint256 private immutable voteEmissionsBegin;
-
-  address public asset;
-  uint256 public strikePrice;
-  uint8 private assetDecimals;
-
-  uint256 public maxTotalSupply;
 
   uint public maturityTimestamp;
+
+  modifier onlyWhenMatured() {
+    require(block.timestamp >= maturityTimestamp, "FlaixCallOption: not matured");
+    _;
+  }
 
   constructor(
     string memory name,
     string memory symbol,
-    address vault_,
     address asset_,
-    uint256 maxTotalSupply_,
-    uint256 strikePrice_,
+    address minter_,
+    address vault_,
+    uint256 totalSupply_,
     uint maturityTimestamp_
   ) ERC20(name, symbol) {
-    asset = asset_;
-    assetDecimals = IERC20Metadata(asset_).decimals();
-    maxTotalSupply = maxTotalSupply_;
-    strikePrice = strikePrice_;
+    require(maturityTimestamp_ >= block.timestamp, "FlaixCallOption: maturity in the past");
     maturityTimestamp = maturityTimestamp_;
+    asset = asset_;
     vault = vault_;
-    treasury = IFlaixVault(vault_).treasury();
-    voteToken = IFlaixVault(vault_).voteToken();
-    voteEmissionsBegin = IFlaixVault(vault_).voteEmissionsBegin();
+    _mint(minter_, totalSupply_);
+    emit Issue(minter_, totalSupply_, maturityTimestamp_);
   }
 
-  function mint(address recipient, uint256 amount) external {
-    _mint(recipient, amount);
-    IFlaixVotes(voteToken).mint(treasury, amount);
-  }
-
-  function mintWithVotes(address recipient, uint256 amount) external {
-    uint256 assetsToPay = (amount * pricePerVote()) / 10**assetDecimals;
-    IERC20(asset).safeTransferFrom(msg.sender, treasury, assetsToPay);
-    IFlaixVotes(voteToken).mint(recipient, amount);
-  }
-
-  function _mint(address recipient, uint256 amount) internal override {
-    require(block.timestamp < maturityTimestamp, "FlaixCallOption: expired");
-    require(totalSupply() + amount <= maxTotalSupply, "FlaixCallOption: max total supply exceeded");
-    uint256 assetAmount = (amount * strikePrice) / 10**assetDecimals;
-    IERC20(asset).safeTransferFrom(msg.sender, address(this), assetAmount);
-    ERC20._mint(recipient, amount);
-  }
-
-  function previewMint(uint256 shares, bool buyVotes) external view returns (uint256) {
-    uint256 assetAmount = (shares * strikePrice) / 10**assetDecimals;
-    if (buyVotes) {
-      assetAmount += (shares * pricePerVote()) / 10**assetDecimals;
-    }
-    return assetAmount;
-  }
-
-  function maxMintable() public view returns (uint256) {
-    return maxTotalSupply - totalSupply();
-  }
-
-  function exercise(address recipient) public {
-    require(block.timestamp >= maturityTimestamp, "FlaixCallOption: not matured");
-    uint256 amount = balanceOf(msg.sender);
+  /// @notice Exercise the given amount of options and transfers the result to
+  ///         the recipient. The amount of options is burned while the same
+  ///         amount of shares is transferred from the options contract to the recipient.
+  ///         After that, a corresponding amount of the underlying assets is transferred
+  ///         from the options contract to the vault.
+  /// @param recipient The address to which the result is transferred.
+  /// @param amount The amount of options to exercise.
+  function exercise(address recipient, uint256 amount) public onlyWhenMatured {
+    require(amount <= balanceOf(msg.sender), "FlaixCallOption: insufficient balance");
+    uint256 assetAmount = convertToAssets(amount);
     _burn(msg.sender, amount);
-    IFlaixVault(vault).mint(recipient, amount);
-    IERC20(asset).safeTransfer(msg.sender, amount);
+    IERC20(vault).safeTransfer(recipient, amount);
+    IERC20(asset).safeTransfer(vault, assetAmount);
+    emit Exercise(recipient, amount, assetAmount);
   }
 
-  function pricePerVote() public view virtual returns (uint256) {
-    uint256 emissionBegin = voteEmissionsBegin;
-    if (emissionBegin == 0 || block.timestamp < emissionBegin) {
-      return 2e18;
-    }
-    uint256 timeSinceEmissionsBegin = block.timestamp - emissionBegin;
-    if (timeSinceEmissionsBegin >= 365 days) {
-      return 0;
-    }
-    // not precise, but good enough ;-)
-    return 2e18 - (2011 * (timeSinceEmissionsBegin**2));
+  /// @notice Returns the amount of underlying assets for the given amount of
+  ///         options when the option is exercised.
+  function convertToAssets(uint256 amount) public view returns (uint256) {
+    return IERC20(asset).balanceOf(address(this)).mul(amount).div(totalSupply());
+  }
+
+  /// @notice Revoke the given amount of options. The amount of options is burned
+  ///         while the same amount of vault shares is burned from the options contract.
+  ///         After that, a corresponding amount of the underlying assets is transferred
+  ///         from the options contract to the recipient. This function can be used to
+  ///         reverse the effect of issuing options or to remove options from the market.
+  function revoke(address recipient, uint256 amount) public onlyWhenMatured {
+    require(amount <= balanceOf(msg.sender), "FlaixCallOption: insufficient balance");
+    uint256 assetAmount = convertToAssets(amount);
+    _burn(msg.sender, amount);
+    IFlaixVault(vault).burn(amount);
+    IERC20(asset).safeTransfer(recipient, assetAmount);
+    emit Revoke(recipient, amount);
   }
 }
