@@ -5,7 +5,7 @@ import "forge-std/Test.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../src/utils/MockERC20.sol";
 
-contract BaseTest is Test {
+contract Base_Test is Test {
   struct Users {
     address deployer;
     address admin;
