@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 
 import "../interfaces/IFlaixOption.sol";
 import "../interfaces/IFlaixVault.sol";
@@ -24,7 +24,7 @@ import "../interfaces/IFlaixVault.sol";
 ///         to the option owner.
 contract FlaixCallOption is ERC20, IFlaixOption {
   using SafeERC20 for IERC20;
-  using SafeMath for uint256;
+  using Math for uint256;
 
   address public immutable asset;
 
@@ -73,7 +73,7 @@ contract FlaixCallOption is ERC20, IFlaixOption {
   /// @notice Returns the amount of underlying assets for the given amount of
   ///         options when the option is exercised.
   function convertToAssets(uint256 amount) public view returns (uint256) {
-    return IERC20(asset).balanceOf(address(this)).mul(amount).div(totalSupply());
+    return IERC20(asset).balanceOf(address(this)).mulDiv(amount, totalSupply());
   }
 
   /// @notice Revoke the given amount of options. The amount of options is burned

@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 
 import "../interfaces/IFlaixVault.sol";
 import "../interfaces/IFlaixOption.sol";
@@ -26,7 +26,7 @@ import "../interfaces/IFlaixOption.sol";
 ///         is meant as a reverse operation to exercising options.
 contract FlaixPutOption is ERC20, IFlaixOption {
   using SafeERC20 for IERC20;
-  using SafeMath for uint256;
+  using Math for uint256;
 
   /// @notice The address of the vault which issued the options.
   address public immutable vault;
@@ -84,7 +84,7 @@ contract FlaixPutOption is ERC20, IFlaixOption {
   ///         options when exercised.
   function convertToAssets(uint256 amount) public view returns (uint256) {
     uint256 assetBalance = IERC20(asset).balanceOf(address(this));
-    return assetBalance.mul(amount).div(totalSupply());
+    return assetBalance.mulDiv(amount, totalSupply());
   }
 
   function _exercise(address recipient, uint256 amount) internal {}
