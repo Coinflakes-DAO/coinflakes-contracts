@@ -28,6 +28,12 @@ contract FlaixVault is ERC20, AccessControl {
   /// @notice The address of the role manager. The role manager is a single account which can grant and revoke roles an the contract.
   address public roleManager;
 
+  /// @notice The minimal maturity of options that can be issued by the vault.
+  uint public minimalOptionsMaturity = 5 days;
+
+  /// @notice The role which allows an account to change the minimal options maturity.
+  bytes32 public constant CHANGE_MINIMAL_OPTIONS_MATURITY_ROLE = keccak256("CHANGE_MINIMAL_OPTIONS_MATURITY_ROLE");
+
   /// @notice The role which allows an account to add or remove assets from the vault.
   bytes32 public constant ADD_REMOVE_ASSET_ROLE = keccak256("ADD_REMOVE_ASSET_ROLE");
 
@@ -36,15 +42,6 @@ contract FlaixVault is ERC20, AccessControl {
 
   /// @notice The role which allows an account to mint put options.
   bytes32 public constant ISSUE_PUT_OPTIONS_ROLE = keccak256("ISSUE_PUT_OPTIONS_ROLE");
-
-  event IssueCallOptions(
-    address indexed issuer,
-    address indexed recipient,
-    uint256 amount,
-    address indexed asset,
-    uint256 assetAmount,
-    uint256 maturityTimestamp
-  );
 
   /// @dev Constructor
   constructor() ERC20("Coinflakes AI Vault", "FLAIX") {
@@ -61,18 +58,31 @@ contract FlaixVault is ERC20, AccessControl {
     roleManager = account;
   }
 
-  /// @notice Grants the right to add or remove assets to/from the vault to an address.
+  /// @notice Grants a role to an address.
   ///         This function can only be called by the role manager.
-  /// @param account The address to grant the right to.
-  function grantAddRemoveAssetRole(address account) public onlyRole(DEFAULT_ADMIN_ROLE) {
-    _grantRole(ADD_REMOVE_ASSET_ROLE, account);
+  /// @param account The address to grant the role to.
+  /// @param role The role to grant.
+  function grantRole(address account, bytes32 role) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    require(role != DEFAULT_ADMIN_ROLE, "Vault: Cannot grant admin role");
+    _grantRole(role, account);
   }
 
-  /// @notice Revokes the right to add or remove assets to/from the vault from an address.
+  /// @notice Revokes a role from an address.
   ///         This function can only be called by the role manager.
-  /// @param account The address to revoke the right from.
-  function revokeAddRemoveAssetRole(address account) public onlyRole(DEFAULT_ADMIN_ROLE) {
-    _revokeRole(ADD_REMOVE_ASSET_ROLE, account);
+  /// @param account The address to revoke the role from.
+  /// @param role The role to revoke.
+  function revokeRole(address account, bytes32 role) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    require(role != DEFAULT_ADMIN_ROLE, "Vault: Cannot revoke admin role");
+    _revokeRole(role, account);
+  }
+
+  /// @notice Changes the minimal options maturity. The minimal options maturity is the minimal maturity of options
+  ///         that can be issued by the vault.
+  ///         This function can only be called by an account with the CHANGE_MINIMAL_OPTIONS_MATURITY_ROLE.
+  /// @param newMaturity The new minimal options maturity.
+  function changeMinimalOptionsMaturity(uint newMaturity) public onlyRole(CHANGE_MINIMAL_OPTIONS_MATURITY_ROLE) {
+    if (newMaturity < 3 days) revert IFlaixVault.MinimalOptionsMaturityBelowLimit({limit: 3 days});
+    minimalOptionsMaturity = newMaturity;
   }
 
   /// @notice Adds an asset to the allowed asset list of the vault
@@ -114,6 +124,10 @@ contract FlaixVault is ERC20, AccessControl {
     return _allowedAssets.at(index);
   }
 
+  /// @notice Burns shares from the sender and sends the pro rata amount
+  ///         of each vault asset to the recipient in return.
+  /// @param amount The amount of shares to burn.
+  /// @param recipient The address to send the vault assets to.
   function redeemShares(uint256 amount, address recipient) public {
     require(recipient != address(0), "Vault: Recipient cannot be zero address");
     uint256 q = (amount * (10**decimals())) / totalSupply();
@@ -126,6 +140,8 @@ contract FlaixVault is ERC20, AccessControl {
     }
   }
 
+  /// @notice Burns shares from the sender.
+  /// @param amount The amount of shares to burn.
   function burn(uint256 amount) public {
     _burn(msg.sender, amount);
   }
@@ -155,8 +171,8 @@ contract FlaixVault is ERC20, AccessControl {
     uint256 assetAmount,
     uint256 maturityTimestamp
   ) public onlyRole(ISSUE_CALL_OPTIONS_ROLE) returns (address) {
-    require(maturityTimestamp > block.timestamp, "Vault: Maturity must be in the future");
-    require(_allowedAssets.contains(asset), "Vault: Asset not allowed");
+    if (maturityTimestamp < block.timestamp + minimalOptionsMaturity) revert IFlaixVault.OptionsMaturityTooLow();
+    if (!_allowedAssets.contains(asset)) revert IFlaixVault.AssetNotOnAllowList();
 
     FlaixCallOption options = new FlaixCallOption(
       name,
@@ -170,7 +186,6 @@ contract FlaixVault is ERC20, AccessControl {
     IERC20(asset).safeTransferFrom(msg.sender, address(options), assetAmount);
     _mint(address(options), sharesAmount);
 
-    emit IssueCallOptions(msg.sender, recipient, sharesAmount, asset, assetAmount, maturityTimestamp);
     return address(options);
   }
 
