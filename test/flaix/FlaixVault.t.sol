@@ -7,9 +7,15 @@ import {FlaixVault} from "../../src/flaix/FlaixVault.sol";
 contract FlaixVault_Test is Base_Test {
   FlaixVault public vault;
 
-  function setUp() public override {
+  function setUp() public virtual override {
     Base_Test.setUp();
-    vm.startPrank(users.deployer);
+    vm.prank(users.deployer);
     vault = new FlaixVault();
+    setUp_UserRoles();
+  }
+
+  function setUp_UserRoles() public {
+    vm.prank(vault.admin());
+    vault.changeAdmin(users.admin);
   }
 }
