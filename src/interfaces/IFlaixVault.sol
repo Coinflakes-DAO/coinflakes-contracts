@@ -8,10 +8,10 @@ interface IFlaixVault is IERC20 {
   error OnlyAllowedForAdmin();
 
   /// @notice Error code for when the maturity is changed below the hard coded limit.
-  error MinimalOptionsMaturityBelowLimit(uint limit);
+  error MaturityChangeBelowLimit();
 
   /// @notice Error code for when an option is issued with a maturity below the current minimum.
-  error OptionsMaturityTooLow();
+  error MaturityTooLow();
 
   /// @notice Error code for when an asset is not on the allow list.
   error AssetNotOnAllowList();

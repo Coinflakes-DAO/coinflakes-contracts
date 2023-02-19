@@ -24,11 +24,15 @@ contract FlaixVault is ERC20, IFlaixVault {
 
   EnumerableSet.AddressSet private _allowedAssets;
 
-  /// @notice The address of the admin account.
+  /// @notice The address of the admin account. The admin account should be replaced
+  ///         by a multisig contract or even better a DAO in the future.
   address public admin;
 
-  /// @notice The minimal maturity of options that can be issued by the vault.
-  uint public minimalOptionsMaturity = 5 days;
+  /// @notice When an option is issued, the issuer chooses a value for the maturity of the option.
+  ///         The maturity of the option is the time at which the option can be exercised.
+  ///         The maturity of the option must be at least 3 days. The minimal
+  ///         maturity can be changed by the admin account.
+  uint public minimalOptionsMaturity = 3 days;
 
   modifier onlyAdmin() {
     if (_msgSender() != admin) revert IFlaixVault.OnlyAllowedForAdmin();
@@ -41,6 +45,9 @@ contract FlaixVault is ERC20, IFlaixVault {
     emit AdminChanged(admin, address(0));
   }
 
+  /// @notice Changes the admin account of the vault. This function can only be called by
+  ///         the previous admin account.
+  /// @param newAdmin The new admin account.
   function changeAdmin(address newAdmin) public onlyAdmin {
     emit AdminChanged(newAdmin, admin);
     admin = newAdmin;
@@ -51,7 +58,7 @@ contract FlaixVault is ERC20, IFlaixVault {
   ///         This function can only be called by an account with the CHANGE_MINIMAL_OPTIONS_MATURITY_ROLE.
   /// @param newMaturity The new minimal options maturity.
   function changeMinimalOptionsMaturity(uint newMaturity) public onlyAdmin {
-    if (newMaturity < 3 days) revert IFlaixVault.MinimalOptionsMaturityBelowLimit({limit: 3 days});
+    if (newMaturity < 3 days) revert IFlaixVault.MaturityChangeBelowLimit();
     minimalOptionsMaturity = newMaturity;
   }
 
@@ -68,7 +75,6 @@ contract FlaixVault is ERC20, IFlaixVault {
   ///         existing assets nor does it remove the right to withdraw existing assets.
   ///         This function can only be called by an account with the ADD_REMOVE_ASSET_ROLE.
   /// @param assetAddress  The address of the asset to remove from the allowed asset list.
-
   function disallowAsset(address assetAddress) public onlyAdmin {
     require(_allowedAssets.contains(assetAddress), "Vault: Asset not on allow list");
     _allowedAssets.remove(assetAddress);
@@ -141,7 +147,7 @@ contract FlaixVault is ERC20, IFlaixVault {
     uint256 assetAmount,
     uint256 maturityTimestamp
   ) public onlyAdmin returns (address) {
-    if (maturityTimestamp < block.timestamp + minimalOptionsMaturity) revert IFlaixVault.OptionsMaturityTooLow();
+    if (maturityTimestamp < block.timestamp + minimalOptionsMaturity) revert IFlaixVault.MaturityTooLow();
     if (!_allowedAssets.contains(asset)) revert IFlaixVault.AssetNotOnAllowList();
 
     FlaixCallOption options = new FlaixCallOption(
