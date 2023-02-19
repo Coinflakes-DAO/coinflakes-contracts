@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 import "./FlaixCallOption.sol";
@@ -19,68 +18,39 @@ import "./FlaixPutOption.sol";
 ///         a pro rata share of the vault's token holdings.
 /// @dev This contract is based on the OpenZeppelin ERC20 contract.
 
-contract FlaixVault is ERC20, AccessControl {
+contract FlaixVault is ERC20, IFlaixVault {
   using EnumerableSet for EnumerableSet.AddressSet;
   using SafeERC20 for IERC20;
 
   EnumerableSet.AddressSet private _allowedAssets;
 
-  /// @notice The address of the role manager. The role manager is a single account which can grant and revoke roles an the contract.
-  address public roleManager;
+  /// @notice The address of the admin account.
+  address public admin;
 
   /// @notice The minimal maturity of options that can be issued by the vault.
   uint public minimalOptionsMaturity = 5 days;
 
-  /// @notice The role which allows an account to change the minimal options maturity.
-  bytes32 public constant CHANGE_MINIMAL_OPTIONS_MATURITY_ROLE = keccak256("CHANGE_MINIMAL_OPTIONS_MATURITY_ROLE");
-
-  /// @notice The role which allows an account to add or remove assets from the vault.
-  bytes32 public constant ADD_REMOVE_ASSET_ROLE = keccak256("ADD_REMOVE_ASSET_ROLE");
-
-  /// @notice The role which allows an account to mint call options.
-  bytes32 public constant ISSUE_CALL_OPTIONS_ROLE = keccak256("ISSUE_CALL_OPTIONS_ROLE");
-
-  /// @notice The role which allows an account to mint put options.
-  bytes32 public constant ISSUE_PUT_OPTIONS_ROLE = keccak256("ISSUE_PUT_OPTIONS_ROLE");
+  modifier onlyAdmin() {
+    if (_msgSender() != admin) revert IFlaixVault.OnlyAllowedForAdmin();
+    _;
+  }
 
   /// @dev Constructor
   constructor() ERC20("Coinflakes AI Vault", "FLAIX") {
-    _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
-    roleManager = _msgSender();
+    admin = _msgSender();
+    emit AdminChanged(admin, address(0));
   }
 
-  /// @notice Set the role manager. The role manager is a single account which can grant and revoke roles an the contract.
-  ///         This function can only be called by the current role manager.
-  /// @param account The address of the new role manager. Replaces the current role manager.
-  function setRoleManager(address account) public onlyRole(DEFAULT_ADMIN_ROLE) {
-    _grantRole(DEFAULT_ADMIN_ROLE, account);
-    _revokeRole(DEFAULT_ADMIN_ROLE, roleManager);
-    roleManager = account;
-  }
-
-  /// @notice Grants a role to an address.
-  ///         This function can only be called by the role manager.
-  /// @param account The address to grant the role to.
-  /// @param role The role to grant.
-  function grantRole(address account, bytes32 role) public onlyRole(DEFAULT_ADMIN_ROLE) {
-    require(role != DEFAULT_ADMIN_ROLE, "Vault: Cannot grant admin role");
-    _grantRole(role, account);
-  }
-
-  /// @notice Revokes a role from an address.
-  ///         This function can only be called by the role manager.
-  /// @param account The address to revoke the role from.
-  /// @param role The role to revoke.
-  function revokeRole(address account, bytes32 role) public onlyRole(DEFAULT_ADMIN_ROLE) {
-    require(role != DEFAULT_ADMIN_ROLE, "Vault: Cannot revoke admin role");
-    _revokeRole(role, account);
+  function changeAdmin(address newAdmin) public onlyAdmin {
+    emit AdminChanged(newAdmin, admin);
+    admin = newAdmin;
   }
 
   /// @notice Changes the minimal options maturity. The minimal options maturity is the minimal maturity of options
   ///         that can be issued by the vault.
   ///         This function can only be called by an account with the CHANGE_MINIMAL_OPTIONS_MATURITY_ROLE.
   /// @param newMaturity The new minimal options maturity.
-  function changeMinimalOptionsMaturity(uint newMaturity) public onlyRole(CHANGE_MINIMAL_OPTIONS_MATURITY_ROLE) {
+  function changeMinimalOptionsMaturity(uint newMaturity) public onlyAdmin {
     if (newMaturity < 3 days) revert IFlaixVault.MinimalOptionsMaturityBelowLimit({limit: 3 days});
     minimalOptionsMaturity = newMaturity;
   }
@@ -88,7 +58,7 @@ contract FlaixVault is ERC20, AccessControl {
   /// @notice Adds an asset to the allowed asset list of the vault
   ///         This function can only be called by an account with the ADD_REMOVE_ASSET_ROLE.
   /// @param assetAddress The address of the asset to add to the allowed asset list.
-  function allowAsset(address assetAddress) public onlyRole(ADD_REMOVE_ASSET_ROLE) {
+  function allowAsset(address assetAddress) public onlyAdmin {
     require(!_allowedAssets.contains(assetAddress), "Vault: Asset already on allow list");
     _allowedAssets.add(assetAddress);
   }
@@ -99,7 +69,7 @@ contract FlaixVault is ERC20, AccessControl {
   ///         This function can only be called by an account with the ADD_REMOVE_ASSET_ROLE.
   /// @param assetAddress  The address of the asset to remove from the allowed asset list.
 
-  function disallowAsset(address assetAddress) public onlyRole(ADD_REMOVE_ASSET_ROLE) {
+  function disallowAsset(address assetAddress) public onlyAdmin {
     require(_allowedAssets.contains(assetAddress), "Vault: Asset not on allow list");
     _allowedAssets.remove(assetAddress);
   }
@@ -170,7 +140,7 @@ contract FlaixVault is ERC20, AccessControl {
     address asset,
     uint256 assetAmount,
     uint256 maturityTimestamp
-  ) public onlyRole(ISSUE_CALL_OPTIONS_ROLE) returns (address) {
+  ) public onlyAdmin returns (address) {
     if (maturityTimestamp < block.timestamp + minimalOptionsMaturity) revert IFlaixVault.OptionsMaturityTooLow();
     if (!_allowedAssets.contains(asset)) revert IFlaixVault.AssetNotOnAllowList();
 
@@ -215,7 +185,7 @@ contract FlaixVault is ERC20, AccessControl {
     address asset,
     uint256 assetAmount,
     uint maturityTimestamp
-  ) public onlyRole(ISSUE_PUT_OPTIONS_ROLE) returns (address) {
+  ) public onlyAdmin returns (address) {
     require(maturityTimestamp > block.timestamp, "Vault: Maturity must be in the future");
     require(_allowedAssets.contains(asset), "Vault: Asset not allowed");
 
