@@ -66,8 +66,10 @@ contract FlaixVault is ERC20, IFlaixVault {
   ///         This function can only be called by an account with the ADD_REMOVE_ASSET_ROLE.
   /// @param assetAddress The address of the asset to add to the allowed asset list.
   function allowAsset(address assetAddress) public onlyAdmin {
-    require(!_allowedAssets.contains(assetAddress), "Vault: Asset already on allow list");
+    if (assetAddress == address(0)) revert IFlaixVault.AssetCannotBeNull();
+    if (_allowedAssets.contains(assetAddress)) revert AssetAlreadyOnAllowList();
     _allowedAssets.add(assetAddress);
+    emit AssetAllowed(assetAddress);
   }
 
   /// @notice Removes an asset from the allowed asset list of the vault. Note that this
@@ -76,8 +78,9 @@ contract FlaixVault is ERC20, IFlaixVault {
   ///         This function can only be called by an account with the ADD_REMOVE_ASSET_ROLE.
   /// @param assetAddress  The address of the asset to remove from the allowed asset list.
   function disallowAsset(address assetAddress) public onlyAdmin {
-    require(_allowedAssets.contains(assetAddress), "Vault: Asset not on allow list");
+    if (!_allowedAssets.contains(assetAddress)) revert AssetNotOnAllowList();
     _allowedAssets.remove(assetAddress);
+    emit AssetDisallowed(assetAddress);
   }
 
   /// @notice Checks if a certain asset is allowed to be added to the vault.
@@ -97,6 +100,7 @@ contract FlaixVault is ERC20, IFlaixVault {
   /// @param index The index of the asset to return.
   /// @return address The address of the asset at the given index.
   function allowedAsset(uint256 index) public view returns (address) {
+    if (index >= _allowedAssets.length()) revert IFlaixVault.AssetIndexOutOfBounds();
     return _allowedAssets.at(index);
   }
 

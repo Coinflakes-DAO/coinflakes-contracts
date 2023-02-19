@@ -13,11 +13,26 @@ interface IFlaixVault is IERC20 {
   /// @notice Error code for when an option is issued with a maturity below the current minimum.
   error MaturityTooLow();
 
+  /// @notice Error code for when an asset is already on the allow list.
+  error AssetAlreadyOnAllowList();
+
   /// @notice Error code for when an asset is not on the allow list.
   error AssetNotOnAllowList();
 
+  /// @notice Error code for when an asset is not on the allow list.
+  error AssetCannotBeNull();
+
+  /// @notice Error code for when index is after last asset in allow list.
+  error AssetIndexOutOfBounds();
+
   /// @notice Emitted when admin account is changed.
   event AdminChanged(address newAdmin, address oldAdmin);
+
+  /// @notice Emitted when an asset is added to the allow list.
+  event AssetAllowed(address asset);
+
+  /// @notice Emitted when an asset is added to the allow list.
+  event AssetDisallowed(address asset);
 
   /// @notice Burn the given amount of tokens from the sender of the transaction.
   function burn(uint256 amount) external;
