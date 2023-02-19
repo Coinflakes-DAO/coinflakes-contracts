@@ -38,13 +38,5 @@ contract Base_Test is Test {
 
   function setUp_tokens() public {
     tokens = Tokens({dai: new MockERC20("Dai Stablecoin", "DAI", 18), usdc: new MockERC20("USD Coin", "USDC", 6)});
-    tokens.dai.mint(users.deployer, 100_000e18);
-    tokens.dai.mint(users.admin, 100_000e18);
-    tokens.dai.mint(users.alice, 100_000e18);
-    tokens.dai.mint(users.bob, 100_000e18);
-    tokens.usdc.mint(users.deployer, 100_000e6);
-    tokens.usdc.mint(users.admin, 100_000e6);
-    tokens.usdc.mint(users.alice, 100_000e6);
-    tokens.usdc.mint(users.bob, 100_000e6);
   }
 }

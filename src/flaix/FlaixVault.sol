@@ -109,7 +109,9 @@ contract FlaixVault is ERC20, IFlaixVault {
   /// @param amount The amount of shares to burn.
   /// @param recipient The address to send the vault assets to.
   function redeemShares(uint256 amount, address recipient) public {
-    require(recipient != address(0), "Vault: Recipient cannot be zero address");
+    if (amount == 0) return;
+    if (totalSupply() == 0) return;
+    if (recipient == address(0)) revert IFlaixVault.RecipientCannotBeNullAddress();
     uint256 q = (amount * (10**decimals())) / totalSupply();
     _burn(msg.sender, amount);
     for (uint256 i = 0; i < _allowedAssets.length(); i++) {

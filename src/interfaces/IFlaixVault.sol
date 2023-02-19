@@ -25,6 +25,9 @@ interface IFlaixVault is IERC20 {
   /// @notice Error code for when index is after last asset in allow list.
   error AssetIndexOutOfBounds();
 
+  /// @notice Error code for when an recipient is null.
+  error RecipientCannotBeNullAddress();
+
   /// @notice Emitted when admin account is changed.
   event AdminChanged(address newAdmin, address oldAdmin);
 
