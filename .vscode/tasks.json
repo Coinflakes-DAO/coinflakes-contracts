@@ -3,7 +3,7 @@
 	"tasks": [
 		{
 			"type": "shell",
-			"command": "forge test -vvv",
+			"command": "forge test -vv",
 			"problemMatcher": [],
 			"label": "forge: test",
 			"detail": "Run forge test command"

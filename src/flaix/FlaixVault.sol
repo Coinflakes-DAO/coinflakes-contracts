@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 
 import "./FlaixCallOption.sol";
 import "./FlaixPutOption.sol";
@@ -21,6 +22,7 @@ import "./FlaixPutOption.sol";
 contract FlaixVault is ERC20, IFlaixVault {
   using EnumerableSet for EnumerableSet.AddressSet;
   using SafeERC20 for IERC20;
+  using Math for uint256;
 
   EnumerableSet.AddressSet private _allowedAssets;
 
@@ -112,14 +114,13 @@ contract FlaixVault is ERC20, IFlaixVault {
     if (amount == 0) return;
     if (totalSupply() == 0) return;
     if (recipient == address(0)) revert IFlaixVault.RecipientCannotBeNullAddress();
-    uint256 q = (amount * (10**decimals())) / totalSupply();
-    _burn(msg.sender, amount);
     for (uint256 i = 0; i < _allowedAssets.length(); i++) {
       address asset = _allowedAssets.at(i);
       uint256 assetBalance = IERC20(asset).balanceOf(address(this));
-      uint256 assetAmount = (assetBalance * q) / (10**decimals());
+      uint256 assetAmount = assetBalance.mulDiv(amount, totalSupply(), Math.Rounding.Down);
       IERC20(asset).safeTransfer(recipient, assetAmount);
     }
+    _burn(msg.sender, amount);
   }
 
   /// @notice Burns shares from the sender.
