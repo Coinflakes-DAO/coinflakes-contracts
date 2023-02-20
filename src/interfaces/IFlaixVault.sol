@@ -37,6 +37,17 @@ interface IFlaixVault is IERC20 {
   /// @notice Emitted when an asset is added to the allow list.
   event AssetDisallowed(address asset);
 
+  event IssueCallOptions(
+    address indexed options,
+    address indexed recipient,
+    string name,
+    string symbol,
+    uint256 amount,
+    address indexed asset,
+    uint256 assetAmount,
+    uint256 maturity
+  );
+
   /// @notice Burn the given amount of tokens from the sender of the transaction.
   function burn(uint256 amount) external;
 }

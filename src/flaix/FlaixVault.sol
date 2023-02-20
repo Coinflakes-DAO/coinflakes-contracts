@@ -168,7 +168,16 @@ contract FlaixVault is ERC20, IFlaixVault {
     );
     IERC20(asset).safeTransferFrom(msg.sender, address(options), assetAmount);
     _mint(address(options), sharesAmount);
-
+    emit IssueCallOptions(
+      address(options),
+      recipient,
+      name,
+      symbol,
+      sharesAmount,
+      asset,
+      assetAmount,
+      maturityTimestamp
+    );
     return address(options);
   }
 
