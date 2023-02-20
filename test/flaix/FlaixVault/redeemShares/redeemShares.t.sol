@@ -31,9 +31,9 @@ contract RedeemShares_Test is RedeemSharesBase_Test {
     vm.prank(users.alice);
     vault.redeemShares(sharesToRedeem, users.alice);
     uint256 daiToTransfer = uint256(1000e18).mulDiv(sharesToRedeem, 1000e18);
-    //uint256 usdcToTransfer = (2000e6 * sharesToRedeem) / 1000e18;
+    uint256 usdcToTransfer = (2000e6 * sharesToRedeem) / 1000e18;
     assertEq(tokens.dai.balanceOf(users.alice), daiToTransfer);
-    //assertEq(tokens.usdc.balanceOf(users.alice), usdcToTransfer);
+    assertEq(tokens.usdc.balanceOf(users.alice), usdcToTransfer);
   }
 
   function test_whenUserRedeemsSomeShares_sharesAreBurntProRata(uint256 sharesToRedeem)
