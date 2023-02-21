@@ -33,7 +33,7 @@ contract FlaixCallOption is ERC20, IFlaixOption {
   uint public maturityTimestamp;
 
   modifier onlyWhenMatured() {
-    require(block.timestamp >= maturityTimestamp, "FlaixCallOption: not matured");
+    if (block.timestamp < maturityTimestamp) revert IFlaixOption.OptionNotMaturedYet();
     _;
   }
 
@@ -61,8 +61,7 @@ contract FlaixCallOption is ERC20, IFlaixOption {
   ///         from the options contract to the vault.
   /// @param recipient The address to which the result is transferred.
   /// @param amount The amount of options to exercise.
-  function exercise(address recipient, uint256 amount) public onlyWhenMatured {
-    require(amount <= balanceOf(msg.sender), "FlaixCallOption: insufficient balance");
+  function exercise(uint256 amount, address recipient) public onlyWhenMatured {
     uint256 assetAmount = convertToAssets(amount);
     _burn(msg.sender, amount);
     IERC20(vault).safeTransfer(recipient, amount);
@@ -81,8 +80,7 @@ contract FlaixCallOption is ERC20, IFlaixOption {
   ///         After that, a corresponding amount of the underlying assets is transferred
   ///         from the options contract to the recipient. This function can be used to
   ///         reverse the effect of issuing options or to remove options from the market.
-  function revoke(address recipient, uint256 amount) public onlyWhenMatured {
-    require(amount <= balanceOf(msg.sender), "FlaixCallOption: insufficient balance");
+  function revoke(uint256 amount, address recipient) public onlyWhenMatured {
     uint256 assetAmount = convertToAssets(amount);
     _burn(msg.sender, amount);
     IFlaixVault(vault).burn(amount);

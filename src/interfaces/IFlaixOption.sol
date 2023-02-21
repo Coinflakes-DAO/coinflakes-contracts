@@ -4,6 +4,9 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 interface IFlaixOption is IERC20Metadata {
+  /// @notice Error emitted when the option contract is not matured yet.
+  error OptionNotMaturedYet();
+
   /// @notice Emitted when this option contract is issued.
   event Issue(address indexed recipient, uint256 amount, uint maturityTimestamp);
 
@@ -22,8 +25,7 @@ interface IFlaixOption is IERC20Metadata {
   /// @notice Returns the address of the underlying asset.
   function asset() external view returns (address);
 
-  
-  function exercise(address recipient, uint256 amount) external;
+  function exercise(uint256 amount, address recipient) external;
 
   /// @notice Returns the amount of underlying assets for the given amount of
   ///         options.
@@ -31,5 +33,5 @@ interface IFlaixOption is IERC20Metadata {
 
   /// @notice Revoke the given amount of options and transfers the result to
   ///         the recipient.
-  function revoke(address recipient, uint256 amount) external;
+  function revoke(uint256 amount, address recipient) external;
 }

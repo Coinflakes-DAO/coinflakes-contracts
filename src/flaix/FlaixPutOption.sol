@@ -71,7 +71,7 @@ contract FlaixPutOption is ERC20, IFlaixOption {
   ///         underlying assets pro rata to the amount of options exercised.
   /// @param recipient The address of the recipient.
   /// @param amount The amount of options to exercise.
-  function exercise(address recipient, uint256 amount) public onlyWhenMatured {
+  function exercise(uint256 amount, address recipient) public onlyWhenMatured {
     require(amount <= balanceOf(msg.sender), "FlaixPutOption: insufficient balance");
     _burn(msg.sender, amount);
     IFlaixVault(vault).burn(amount);
@@ -87,15 +87,13 @@ contract FlaixPutOption is ERC20, IFlaixOption {
     return assetBalance.mulDiv(amount, totalSupply());
   }
 
-  function _exercise(address recipient, uint256 amount) internal {}
-
   /// @notice Revoke the given amount of options. Transfers an equal amount
   ///         of shares to the recipient as the amouunt of options revoked.
   ///         Transfers a pro rata amount of underlying assets from the
   ///         options contract to the vault.
   /// @param recipient The address of the recipient.
   /// @param amount The amount of options to revoke.
-  function revoke(address recipient, uint256 amount) public onlyWhenMatured {
+  function revoke(uint256 amount, address recipient) public onlyWhenMatured {
     require(amount <= balanceOf(msg.sender), "FlaixPutOption: insufficient balance");
     _burn(msg.sender, amount);
     IERC20(vault).safeTransfer(recipient, amount);
