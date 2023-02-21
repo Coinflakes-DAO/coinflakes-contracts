@@ -3,16 +3,16 @@ pragma solidity ^0.8.0;
 
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-import "./IssueCallOptionsBase.t.sol";
+import "./IssuePutOptionsBase.t.sol";
 
-contract IssueCallOptions_Test is IssueCallOptionsBase_Test {
-  function issueCallOptionsWithValidParams(uint256 amount) private returns (address) {
+contract IssueCallOptions_Test is IssuePutOptionsBase_Test {
+  function issuePutOptionsWithValidParams(uint256 amount) private returns (address) {
     uint limit = vault.minimalOptionsMaturity();
     vm.prank(users.admin);
     return
-      vault.issueCallOptions(
-        "FLAIX Call Options 2023-01-01",
-        "callFLAIX-230101",
+      vault.issuePutOptions(
+        "FLAIX Put Options 2023-01-01",
+        "putFLAIX-230101",
         amount,
         users.admin,
         address(tokens.dai),
@@ -24,15 +24,16 @@ contract IssueCallOptions_Test is IssueCallOptionsBase_Test {
   function test_whenCalledWithValidParameters_returnsAddress()
     public
     whenDaiIsAllowed
-    whenAdminHasDai(1000e18)
-    whenAdminHasApprovedDai(1000e18)
+    whenVaultHasDai(1000e18)
+    whenAdminHasShares(1000e18)
+    whenAdminHasApprovedShares(1000e18)
   {
     vm.prank(users.admin);
-    address options = issueCallOptionsWithValidParams(1000e18);
+    address options = issuePutOptionsWithValidParams(1000e18);
     assertFalse(options == address(0));
   }
 
-  event IssueCallOptions(
+  event IssuePutOptions(
     address indexed options,
     address indexed recipient,
     string name,
@@ -46,59 +47,62 @@ contract IssueCallOptions_Test is IssueCallOptionsBase_Test {
   function test_whenCalledWithValidParameters_emitsEvent()
     public
     whenDaiIsAllowed
-    whenAdminHasDai(1000e18)
-    whenAdminHasApprovedDai(1000e18)
+    whenVaultHasDai(1000e18)
+    whenAdminHasShares(1000e18)
+    whenAdminHasApprovedShares(1000e18)
   {
     vm.prank(users.admin);
     vm.expectEmit(false, false, false, false);
-    emit IssueCallOptions(
+    emit IssuePutOptions(
       address(0),
       users.admin,
-      "FLAIX Call Options 2023-01-01",
-      "callFLAIX-230101",
+      "FLAIX Put Options 2023-01-01",
+      "putFLAIX-230101",
       1000e18,
       address(tokens.dai),
       1000e18,
       0
     );
-    issueCallOptionsWithValidParams(1000e18);
+    issuePutOptionsWithValidParams(1000e18);
   }
 
-  function test_whenCalledWithValidParameters_mintsShares()
+  function test_whenCalledWithValidParameters_transfersSharesToOptions()
     public
     whenDaiIsAllowed
-    whenAdminHasDai(1000e18)
-    whenAdminHasApprovedDai(1000e18)
+    whenVaultHasDai(1000e18)
+    whenAdminHasShares(1000e18)
+    whenAdminHasApprovedShares(1000e18)
   {
     vm.prank(users.admin);
-    address options = issueCallOptionsWithValidParams(1000e18);
+    address options = issuePutOptionsWithValidParams(1000e18);
+    assertEq(vault.balanceOf(users.admin), 0);
     assertEq(vault.balanceOf(options), 1000e18);
-    assertEq(vault.totalSupply(), 1000e18);
   }
 
   function test_whenCalledWithValidParameters_transfersAssetsToOptions()
     public
     whenDaiIsAllowed
-    whenAdminHasDai(1000e18)
-    whenAdminHasApprovedDai(1000e18)
+    whenVaultHasDai(1000e18)
+    whenAdminHasShares(1000e18)
+    whenAdminHasApprovedShares(1000e18)
   {
     vm.prank(users.admin);
-    address options = issueCallOptionsWithValidParams(1000e18);
-    assertEq(tokens.dai.balanceOf(users.admin), 0);
+    address options = issuePutOptionsWithValidParams(1000e18);
+    assertEq(tokens.dai.balanceOf(address(vault)), 0);
     assertEq(tokens.dai.balanceOf(options), 1000e18);
   }
 
   function test_whenCalledWithValidParameters_erc20MetaDataIsSet()
     public
     whenDaiIsAllowed
-    whenAdminHasDai(1000e18)
-    whenAdminHasApprovedDai(1000e18)
+    whenVaultHasDai(1000e18)
+    whenAdminHasShares(1000e18)
+    whenAdminHasApprovedShares(1000e18)
   {
     vm.prank(users.admin);
-    address options = issueCallOptionsWithValidParams(1000e18);
-    assertEq(IERC20Metadata(options).name(), "FLAIX Call Options 2023-01-01");
-    assertEq(IERC20Metadata(options).symbol(), "callFLAIX-230101");
+    address options = issuePutOptionsWithValidParams(1000e18);
+    assertEq(IERC20Metadata(options).name(), "FLAIX Put Options 2023-01-01");
+    assertEq(IERC20Metadata(options).symbol(), "putFLAIX-230101");
     assertEq(IERC20Metadata(options).decimals(), 18);
-    assertEq(tokens.dai.balanceOf(options), 1000e18);
   }
 }

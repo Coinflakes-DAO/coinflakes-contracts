@@ -48,6 +48,17 @@ interface IFlaixVault is IERC20 {
     uint256 maturity
   );
 
+  event IssuePutOptions(
+    address indexed options,
+    address indexed recipient,
+    string name,
+    string symbol,
+    uint256 amount,
+    address indexed asset,
+    uint256 assetAmount,
+    uint256 maturity
+  );
+
   /// @notice Burn the given amount of tokens from the sender of the transaction.
   function burn(uint256 amount) external;
 }

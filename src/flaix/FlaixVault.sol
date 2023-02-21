@@ -199,7 +199,7 @@ contract FlaixVault is ERC20, IFlaixVault {
   /// @param assetAmount The amount of underlying asset to be transferred from the vault to the contract.
   /// @param maturityTimestamp The timestamp at which the put option can be exercised.
   /// @return address The address of the newly minted put option contract.
-  function issuePutOption(
+  function issuePutOptions(
     string memory name,
     string memory symbol,
     uint256 sharesAmount,
@@ -208,8 +208,8 @@ contract FlaixVault is ERC20, IFlaixVault {
     uint256 assetAmount,
     uint maturityTimestamp
   ) public onlyAdmin returns (address) {
-    require(maturityTimestamp > block.timestamp, "Vault: Maturity must be in the future");
-    require(_allowedAssets.contains(asset), "Vault: Asset not allowed");
+    if (maturityTimestamp < block.timestamp + minimalOptionsMaturity) revert IFlaixVault.MaturityTooLow();
+    if (!_allowedAssets.contains(asset)) revert IFlaixVault.AssetNotOnAllowList();
 
     FlaixPutOption options = new FlaixPutOption(
       name,
@@ -222,6 +222,16 @@ contract FlaixVault is ERC20, IFlaixVault {
     );
     IERC20(this).safeTransferFrom(msg.sender, address(options), sharesAmount);
     IERC20(asset).safeTransfer(address(options), assetAmount);
+    emit IssuePutOptions(
+      address(options),
+      recipient,
+      name,
+      symbol,
+      sharesAmount,
+      asset,
+      assetAmount,
+      maturityTimestamp
+    );
     return address(options);
   }
 }
