@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import "../interfaces/IFlaixVault.sol";
 import "../interfaces/IFlaixOption.sol";
@@ -24,7 +25,7 @@ import "../interfaces/IFlaixOption.sol";
 ///         the amount of options revoked and the vault receives the underlying assets from
 ///         the options contract pro rata to the amount of options revoked. Revoking options
 ///         is meant as a reverse operation to exercising options.
-contract FlaixPutOption is ERC20, IFlaixOption {
+contract FlaixPutOption is ERC20, IFlaixOption, ReentrancyGuard {
   using SafeERC20 for IERC20;
   using Math for uint256;
 
@@ -59,6 +60,9 @@ contract FlaixPutOption is ERC20, IFlaixOption {
     uint maturityTimestamp_
   ) ERC20(name, symbol) {
     require(maturityTimestamp_ >= block.timestamp, "FlaixPutOption: maturity in the past");
+    require(asset_ != address(0), "FlaixPutOption: asset is zero address");
+    require(vault_ != address(0), "FlaixPutOption: vault is zero address");
+
     maturityTimestamp = maturityTimestamp_;
     asset = asset_;
     vault = vault_;
@@ -71,12 +75,12 @@ contract FlaixPutOption is ERC20, IFlaixOption {
   ///         underlying assets pro rata to the amount of options exercised.
   /// @param recipient The address of the recipient.
   /// @param amount The amount of options to exercise.
-  function exercise(uint256 amount, address recipient) public onlyWhenMatured {
+  function exercise(uint256 amount, address recipient) public onlyWhenMatured nonReentrant {
     uint256 assetAmount = convertToAssets(amount);
+    emit Exercise(recipient, amount, assetAmount);
     IERC20(asset).safeTransfer(recipient, assetAmount);
     IFlaixVault(vault).burn(amount);
     _burn(msg.sender, amount);
-    emit Exercise(recipient, amount, assetAmount);
   }
 
   /// @notice Returns the amount of underlying assets for the given amount of
@@ -91,10 +95,10 @@ contract FlaixPutOption is ERC20, IFlaixOption {
   ///         options contract to the vault.
   /// @param recipient The address of the recipient.
   /// @param amount The amount of options to revoke.
-  function revoke(uint256 amount, address recipient) public onlyWhenMatured {
+  function revoke(uint256 amount, address recipient) public onlyWhenMatured nonReentrant {
+    emit Revoke(recipient, amount);
     IERC20(vault).safeTransfer(recipient, amount);
     IERC20(asset).safeTransfer(vault, convertToAssets(amount));
     _burn(msg.sender, amount);
-    emit Revoke(recipient, amount);
   }
 }

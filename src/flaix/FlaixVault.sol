@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import "./FlaixCallOption.sol";
 import "./FlaixPutOption.sol";
@@ -19,7 +20,7 @@ import "./FlaixPutOption.sol";
 ///         a pro rata share of the vault's token holdings.
 /// @dev This contract is based on the OpenZeppelin ERC20 contract.
 
-contract FlaixVault is ERC20, IFlaixVault {
+contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
   using EnumerableSet for EnumerableSet.AddressSet;
   using SafeERC20 for IERC20;
   using Math for uint256;
@@ -51,6 +52,7 @@ contract FlaixVault is ERC20, IFlaixVault {
   ///         the previous admin account.
   /// @param newAdmin The new admin account.
   function changeAdmin(address newAdmin) public onlyAdmin {
+    if (newAdmin == address(0)) revert IFlaixVault.AdminCannotBeNull();
     emit AdminChanged(newAdmin, admin);
     admin = newAdmin;
   }
@@ -69,8 +71,7 @@ contract FlaixVault is ERC20, IFlaixVault {
   /// @param assetAddress The address of the asset to add to the allowed asset list.
   function allowAsset(address assetAddress) public onlyAdmin {
     if (assetAddress == address(0)) revert IFlaixVault.AssetCannotBeNull();
-    if (_allowedAssets.contains(assetAddress)) revert AssetAlreadyOnAllowList();
-    _allowedAssets.add(assetAddress);
+    if (!_allowedAssets.add(assetAddress)) revert AssetAlreadyOnAllowList();
     emit AssetAllowed(assetAddress);
   }
 
@@ -80,8 +81,7 @@ contract FlaixVault is ERC20, IFlaixVault {
   ///         This function can only be called by an account with the ADD_REMOVE_ASSET_ROLE.
   /// @param assetAddress  The address of the asset to remove from the allowed asset list.
   function disallowAsset(address assetAddress) public onlyAdmin {
-    if (!_allowedAssets.contains(assetAddress)) revert AssetNotOnAllowList();
-    _allowedAssets.remove(assetAddress);
+    if (!_allowedAssets.remove(assetAddress)) revert AssetNotOnAllowList();
     emit AssetDisallowed(assetAddress);
   }
 
@@ -110,7 +110,7 @@ contract FlaixVault is ERC20, IFlaixVault {
   ///         of each vault asset to the recipient in return.
   /// @param amount The amount of shares to burn.
   /// @param recipient The address to send the vault assets to.
-  function redeemShares(uint256 amount, address recipient) public {
+  function redeemShares(uint256 amount, address recipient) public nonReentrant {
     if (amount == 0) return;
     if (totalSupply() == 0) return;
     if (recipient == address(0)) revert IFlaixVault.RecipientCannotBeNullAddress();
@@ -153,7 +153,7 @@ contract FlaixVault is ERC20, IFlaixVault {
     address asset,
     uint256 assetAmount,
     uint256 maturityTimestamp
-  ) public onlyAdmin returns (address) {
+  ) public onlyAdmin nonReentrant returns (address) {
     if (maturityTimestamp < block.timestamp + minimalOptionsMaturity) revert IFlaixVault.MaturityTooLow();
     if (!_allowedAssets.contains(asset)) revert IFlaixVault.AssetNotOnAllowList();
 
@@ -166,8 +166,6 @@ contract FlaixVault is ERC20, IFlaixVault {
       sharesAmount,
       maturityTimestamp
     );
-    IERC20(asset).safeTransferFrom(msg.sender, address(options), assetAmount);
-    _mint(address(options), sharesAmount);
     emit IssueCallOptions(
       address(options),
       recipient,
@@ -178,6 +176,9 @@ contract FlaixVault is ERC20, IFlaixVault {
       assetAmount,
       maturityTimestamp
     );
+    IERC20(asset).safeTransferFrom(msg.sender, address(options), assetAmount);
+    _mint(address(options), sharesAmount);
+
     return address(options);
   }
 
@@ -207,7 +208,7 @@ contract FlaixVault is ERC20, IFlaixVault {
     address asset,
     uint256 assetAmount,
     uint maturityTimestamp
-  ) public onlyAdmin returns (address) {
+  ) public onlyAdmin nonReentrant returns (address) {
     if (maturityTimestamp < block.timestamp + minimalOptionsMaturity) revert IFlaixVault.MaturityTooLow();
     if (!_allowedAssets.contains(asset)) revert IFlaixVault.AssetNotOnAllowList();
 
@@ -220,8 +221,6 @@ contract FlaixVault is ERC20, IFlaixVault {
       sharesAmount,
       maturityTimestamp
     );
-    IERC20(this).safeTransferFrom(msg.sender, address(options), sharesAmount);
-    IERC20(asset).safeTransfer(address(options), assetAmount);
     emit IssuePutOptions(
       address(options),
       recipient,
@@ -232,6 +231,8 @@ contract FlaixVault is ERC20, IFlaixVault {
       assetAmount,
       maturityTimestamp
     );
+    IERC20(this).safeTransferFrom(msg.sender, address(options), sharesAmount);
+    IERC20(asset).safeTransfer(address(options), assetAmount);
     return address(options);
   }
 }

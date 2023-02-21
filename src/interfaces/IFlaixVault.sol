@@ -4,6 +4,9 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface IFlaixVault is IERC20 {
+  /// @notice Error code for when the new Admin is the null address
+  error AdminCannotBeNull();
+
   /// @notice Error code for when a function is restricted for the admin.
   error OnlyAllowedForAdmin();
 
