@@ -38,7 +38,7 @@ contract FlaixPutOption is ERC20, IFlaixOption {
   uint public immutable maturityTimestamp;
 
   modifier onlyWhenMatured() {
-    require(block.timestamp >= maturityTimestamp, "FlaixPutOption: not matured");
+    if (block.timestamp < maturityTimestamp) revert IFlaixOption.OptionNotMaturedYet();
     _;
   }
 
@@ -72,19 +72,17 @@ contract FlaixPutOption is ERC20, IFlaixOption {
   /// @param recipient The address of the recipient.
   /// @param amount The amount of options to exercise.
   function exercise(uint256 amount, address recipient) public onlyWhenMatured {
-    require(amount <= balanceOf(msg.sender), "FlaixPutOption: insufficient balance");
-    _burn(msg.sender, amount);
-    IFlaixVault(vault).burn(amount);
     uint256 assetAmount = convertToAssets(amount);
     IERC20(asset).safeTransfer(recipient, assetAmount);
+    IFlaixVault(vault).burn(amount);
+    _burn(msg.sender, amount);
     emit Exercise(recipient, amount, assetAmount);
   }
 
   /// @notice Returns the amount of underlying assets for the given amount of
   ///         options when exercised.
   function convertToAssets(uint256 amount) public view returns (uint256) {
-    uint256 assetBalance = IERC20(asset).balanceOf(address(this));
-    return assetBalance.mulDiv(amount, totalSupply());
+    return IERC20(asset).balanceOf(address(this)).mulDiv(amount, totalSupply());
   }
 
   /// @notice Revoke the given amount of options. Transfers an equal amount
@@ -94,9 +92,9 @@ contract FlaixPutOption is ERC20, IFlaixOption {
   /// @param recipient The address of the recipient.
   /// @param amount The amount of options to revoke.
   function revoke(uint256 amount, address recipient) public onlyWhenMatured {
-    require(amount <= balanceOf(msg.sender), "FlaixPutOption: insufficient balance");
-    _burn(msg.sender, amount);
     IERC20(vault).safeTransfer(recipient, amount);
     IERC20(asset).safeTransfer(vault, convertToAssets(amount));
+    _burn(msg.sender, amount);
+    emit Revoke(recipient, amount);
   }
 }
