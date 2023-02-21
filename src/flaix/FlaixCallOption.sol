@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.16;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -31,9 +31,10 @@ contract FlaixCallOption is ERC20, IFlaixOption, ReentrancyGuard {
 
   address public immutable vault;
 
-  uint public maturityTimestamp;
+  uint public immutable maturityTimestamp;
 
   modifier onlyWhenMatured() {
+    //slither-disable-next-line timestamp
     if (block.timestamp < maturityTimestamp) revert IFlaixOption.OptionNotMaturedYet();
     _;
   }
@@ -47,6 +48,7 @@ contract FlaixCallOption is ERC20, IFlaixOption, ReentrancyGuard {
     uint256 totalSupply_,
     uint maturityTimestamp_
   ) ERC20(name, symbol) {
+    //slither-disable-next-line timestamp
     require(maturityTimestamp_ >= block.timestamp, "FlaixCallOption: maturity in the past");
     require(asset_ != address(0), "FlaixPutOption: asset is zero address");
     require(vault_ != address(0), "FlaixPutOption: vault is zero address");

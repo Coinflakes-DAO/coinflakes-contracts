@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.16;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -116,8 +116,10 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
     if (recipient == address(0)) revert IFlaixVault.RecipientCannotBeNullAddress();
     for (uint256 i = 0; i < _allowedAssets.length(); i++) {
       address asset = _allowedAssets.at(i);
+      //slither-disable-next-line calls-loop
       uint256 assetBalance = IERC20(asset).balanceOf(address(this));
       uint256 assetAmount = assetBalance.mulDiv(amount, totalSupply(), Math.Rounding.Down);
+      //slither-disable-next-line calls-loop
       IERC20(asset).safeTransfer(recipient, assetAmount);
     }
     _burn(msg.sender, amount);
@@ -154,6 +156,7 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
     uint256 assetAmount,
     uint256 maturityTimestamp
   ) public onlyAdmin nonReentrant returns (address) {
+    //slither-disable-next-line timestamp
     if (maturityTimestamp < block.timestamp + minimalOptionsMaturity) revert IFlaixVault.MaturityTooLow();
     if (!_allowedAssets.contains(asset)) revert IFlaixVault.AssetNotOnAllowList();
 
@@ -209,6 +212,7 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
     uint256 assetAmount,
     uint maturityTimestamp
   ) public onlyAdmin nonReentrant returns (address) {
+    //slither-disable-next-line timestamp
     if (maturityTimestamp < block.timestamp + minimalOptionsMaturity) revert IFlaixVault.MaturityTooLow();
     if (!_allowedAssets.contains(asset)) revert IFlaixVault.AssetNotOnAllowList();
 
