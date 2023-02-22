@@ -1,3 +1,12 @@
+[![Unit Tests](https://github.com/Coinflakes-DAO/coinflakes-contracts/actions/workflows/test.yml/badge.svg)](https://github.com/Coinflakes-DAO/coinflakes-contracts/actions/workflows/test.yml)
+[![Slither Analysis](https://github.com/Coinflakes-DAO/coinflakes-contracts/actions/workflows/slither.yml/badge.svg)](https://github.com/Coinflakes-DAO/coinflakes-contracts/actions/workflows/slither.yml)
+
+# Coinflakes DAO
+
+## ~ Smart contracts repository ~
+
+### Project Summary
+
 This repository contains the source code for the Coinflakes DAO smart contracts.
 
 Coinflakes DAO is a decentralized and self-innovating investment fund for crypto projects in the most promising areas of the sector.
