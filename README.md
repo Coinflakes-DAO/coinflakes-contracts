@@ -51,3 +51,12 @@ slither .
 :red_circle: **Important note:** :red_circle:
 
 The project is still in its team building and seed funding phase. There is no investment fund yet, and the smart contracts are not deployed on the Ethereum blockchain. The project is not ready for production use.
+
+### Getting involved
+
+Join the Discord and give be a DM (NedAlbo):
+[Discord](https://discord.gg/juxrN8fH)
+
+### License
+
+[2023 - MIT License](LICENSE)
