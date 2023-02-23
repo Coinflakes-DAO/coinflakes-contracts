@@ -55,7 +55,7 @@ The project is still in its team building and seed funding phase. There is no in
 ### Getting involved
 
 Join the Discord and give be a DM (NedAlbo):
-[Discord](https://discord.gg/juxrN8fH)
+[Discord](https://discord.gg/7yddavsV)
 
 ### License
 
