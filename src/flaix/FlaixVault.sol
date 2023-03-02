@@ -39,6 +39,7 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
   ///         maturity can be changed by the admin account.
   uint public minimalOptionsMaturity = 3 days;
 
+  /// @notice The minting budget for each account which is allowed to mint tokens.
   mapping(address => uint) public minters;
 
   modifier onlyAdmin() {
@@ -110,6 +111,10 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
     return _allowedAssets.at(index);
   }
 
+  /// @notice The minting budger of an account. Only CallOptions or PutOptions
+  ///         can be mint tokens. The minting budget is the amount of tokens
+  ///         that can be minted by the account and is reduced by the amount
+  ///         of tokens the account has already minted.
   function minterBudgetOf(address minter) public view returns (uint) {
     return minters[minter];
   }
@@ -152,11 +157,10 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
   /// @notice Mints FLAIX call options to the recipient. A call option is a token which can be swapped
   ///         for shares of the vault at a certain time in the future.  The call option is minted with
   ///         a certain amount of shares in exchange for a certain amount of an underlying asset. On
-  ///         minting the backing asset is transferred from the minter to the options contract and the
-  ///         vault mints an equal amount of vault shares to the call option contract. After that,
-  ///         the call option contract should own both the underlying assets as well as the vault
-  ///         shares. The recipinet receives all of the call options tokens in return for his assets.
-  ///         This function can only be called by an account with the MINT_CALL_OPTIONS_ROLE.
+  ///         minting the backing asset is transferred from the minter to the options contract and the options
+  ///         contract is granted the right to mint an equal amount of vault shares. After that,
+  ///         the call option contract should own the underlying assets as well as is prepared to mint shares.
+  ///         The recipinet receives all of the call options tokens in return for his assets.
   /// @param name The name of the call option.
   /// @param symbol The symbol of the call option.
   /// @param sharesAmount The amount of shares to be minted to the call option contract.
@@ -207,13 +211,13 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
   /// @notice Mints FLAIX put options to the recipient. A put option is a token which can be swapped
   ///         for underlying assets from the vault at a certain time in the future.
   ///         The put option is minted with a certain amount of underlying assets in exchange
-  ///         for a certain amount of vault shares. On minting the vault shares are transferred
-  ///         from the issuer to the options contract and the
+  ///         for a certain amount of vault shares. On minting the vault shares are burned
+  ///         from the issuer and the
   ///         vault matches this with a given amount of underlying assets transferring them into the
-  ///         options contract. After that, the put option contract should own both the underlying assets from
-  ///         the vault and the shares from the issuer. The recipient receives all of the put options tokens
+  ///         options contract. After that, the put option contract should own the underlying assets from
+  ///         the vault and the right to mint back the burned shares in case the options are revoked.
+  ///         The recipient receives all of the put options tokens
   ///         in return for her shares.
-  ///         This function can only be called by an account with the MINT_PUT_OPTIONS_ROLE.
   /// @param name The name of the put option.
   /// @param symbol The symbol of the put option.
   /// @param sharesAmount The amount of shares to be transferred from the issuer to the contract.

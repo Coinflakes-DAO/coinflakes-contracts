@@ -16,11 +16,10 @@ import "../interfaces/IFlaixOption.sol";
 ///         issued, the issuer transfers a certain amount of shares
 ///         to the options contract and the vault transfers a certain amount of
 ///         the underlying asset. After that, the options
-///         contract holds both the shares and the underlying assets until the option
+///         contract burns the shares and holds the underlying assets until the option
 ///         matures. If on maturity, an option is exercised the options owner
-///         burns the amount of options and receives the underlying assets pro rata to his
-///         burnt share of options. During the same operation, the vault burns an amount
-///         of shares equal to the amount of options exercised. If instead the option owner
+///         receives the underlying assets pro rata to the amount of options exercised.
+///         If instead the option owner
 ///         decides to revoke the options, she receives an equal amount of shares to
 ///         the amount of options revoked and the vault receives the underlying assets from
 ///         the options contract pro rata to the amount of options revoked. Revoking options

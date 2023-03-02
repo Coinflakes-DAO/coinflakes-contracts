@@ -14,15 +14,14 @@ import "../interfaces/IFlaixVault.sol";
 /// @notice Contract for FlaixCallOptions. Call options are used to buy an
 ///         underlying asset on behalf of the vault. If call options are
 ///         issued, the issuer transfers a certain amount of underlying assets
-///         to the options contract and the vault mints a certain amount of
-///         shares, transferring them to the options contract. After that, the options
-///         contract holds both the shares and the underlying assets until the option
+///         to the options contract. After that, the options
+///         the underlying assets until the option
 ///         matures. If on maturity, an option is exercised the options owner
-///         receives the shares and the vault receives the assets corresponding to the
-///         optionns owner share of the total supply of the options (pro rata).
-///         If instead the option owner decides to revoke the option, the vault
-///         burns the shares transfers the pro rata amount of the underlying assets
-///         to the option owner.
+///         receives the an equal amount of shares as the exercised amount of options
+///         while the vault receives the assets corresponding to the
+///         options owner share of the total supply of the options (pro rata).
+///         If instead the option owner decides to revoke the option, the pro rata amount of the underlying assets
+///         are transferred to the option owner and no shares are minted.
 contract FlaixCallOption is ERC20, IFlaixOption, ReentrancyGuard {
   using SafeERC20 for IERC20;
   using Math for uint256;
@@ -61,7 +60,7 @@ contract FlaixCallOption is ERC20, IFlaixOption, ReentrancyGuard {
 
   /// @notice Exercise the given amount of options and transfers the result to
   ///         the recipient. The amount of options is burned while the same
-  ///         amount of shares is transferred from the options contract to the recipient.
+  ///         amount of shares is minted for the recipient.
   ///         After that, a corresponding amount of the underlying assets is transferred
   ///         from the options contract to the vault.
   /// @param recipient The address to which the result is transferred.
@@ -80,8 +79,7 @@ contract FlaixCallOption is ERC20, IFlaixOption, ReentrancyGuard {
     return IERC20(asset).balanceOf(address(this)).mulDiv(amount, totalSupply());
   }
 
-  /// @notice Revoke the given amount of options. The amount of options is burned
-  ///         while the same amount of vault shares is burned from the options contract.
+  /// @notice Revoke the given amount of options. The amount of options is burned.
   ///         After that, a corresponding amount of the underlying assets is transferred
   ///         from the options contract to the recipient. This function can be used to
   ///         reverse the effect of issuing options or to remove options from the market.
