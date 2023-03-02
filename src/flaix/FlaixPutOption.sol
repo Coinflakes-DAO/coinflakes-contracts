@@ -81,6 +81,7 @@ contract FlaixPutOption is ERC20, IFlaixOption, ReentrancyGuard {
     uint256 assetAmount = convertToAssets(amount);
     emit Exercise(recipient, amount, assetAmount);
     IERC20(asset).safeTransfer(recipient, assetAmount);
+    IFlaixVault(vault).mint(amount, address(this));
     IFlaixVault(vault).burn(amount);
     _burn(msg.sender, amount);
   }
@@ -99,7 +100,7 @@ contract FlaixPutOption is ERC20, IFlaixOption, ReentrancyGuard {
   /// @param amount The amount of options to revoke.
   function revoke(uint256 amount, address recipient) public onlyWhenMatured nonReentrant {
     emit Revoke(recipient, amount);
-    IERC20(vault).safeTransfer(recipient, amount);
+    IFlaixVault(vault).mint(amount, recipient);
     IERC20(asset).safeTransfer(vault, convertToAssets(amount));
     _burn(msg.sender, amount);
   }

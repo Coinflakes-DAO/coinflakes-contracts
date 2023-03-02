@@ -66,7 +66,19 @@ contract IssueCallOptions_Test is IssuePutOptionsBase_Test {
     issuePutOptionsWithValidParams(1000e18);
   }
 
-  function test_whenCalledWithValidParameters_transfersSharesToOptions()
+  function test_whenCalledWithValidParameters_burnsSharesFromUser()
+    public
+    whenDaiIsAllowed
+    whenVaultHasDai(1000e18)
+    whenAdminHasShares(1000e18)
+    whenAdminHasApprovedShares(1000e18)
+  {
+    vm.prank(users.admin);
+    issuePutOptionsWithValidParams(1000e18);
+    assertEq(vault.balanceOf(users.admin), 0);
+  }
+
+  function test_whenCalledWithValidParameters_setsMinterBudget()
     public
     whenDaiIsAllowed
     whenVaultHasDai(1000e18)
@@ -75,8 +87,7 @@ contract IssueCallOptions_Test is IssuePutOptionsBase_Test {
   {
     vm.prank(users.admin);
     address options = issuePutOptionsWithValidParams(1000e18);
-    assertEq(vault.balanceOf(users.admin), 0);
-    assertEq(vault.balanceOf(options), 1000e18);
+    assertEq(vault.minterBudgetOf(address(options)), 1000e18);
   }
 
   function test_whenCalledWithValidParameters_transfersAssetsToOptions()

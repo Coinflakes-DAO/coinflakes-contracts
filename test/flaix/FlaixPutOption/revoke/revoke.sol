@@ -10,19 +10,24 @@ contract Exercise_Test is RevokeBase_Test {
     options.revoke(0, users.admin);
     assertEq(options.balanceOf(users.admin), 1000e18);
     assertEq(tokens.dai.balanceOf(address(options)), 1000e18);
-    assertEq(vault.balanceOf(address(options)), 1000e18);
+    assertEq(vault.balanceOf(address(options)), 0);
+    assertEq(vault.minterBudgetOf(address(options)), 1000e18);
   }
 
-  function test_whenRevokeAmountIsValid_sharesAreTransferedToRecipient(uint256 optionsAmount)
-    public
-    whenOptionIsMatured
-  {
+  function test_whenRevokeAmountIsValid_sharesAreMintedToRecipient(uint256 optionsAmount) public whenOptionIsMatured {
     vm.assume(optionsAmount > 0);
     vm.assume(optionsAmount <= options.balanceOf(users.admin));
     vm.prank(users.admin);
     options.revoke(optionsAmount, users.admin);
-    assertEq(vault.balanceOf(address(options)), 1000e18 - optionsAmount);
     assertEq(vault.balanceOf(users.admin), optionsAmount);
+  }
+
+  function test_whenRevokeAmountIsValid_minterBudgetIsReduced(uint256 optionsAmount) public whenOptionIsMatured {
+    vm.assume(optionsAmount > 0);
+    vm.assume(optionsAmount <= options.balanceOf(users.admin));
+    vm.prank(users.admin);
+    options.revoke(optionsAmount, users.admin);
+    assertEq(vault.minterBudgetOf(address(options)), 1000e18 - optionsAmount);
   }
 
   function test_whenExerciseAmountIsValid_assetsAreTransferedToVault(uint256 optionsAmount) public whenOptionIsMatured {

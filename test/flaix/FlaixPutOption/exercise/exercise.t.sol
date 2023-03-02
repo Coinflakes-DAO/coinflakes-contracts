@@ -10,7 +10,8 @@ contract Exercise_Test is ExerciseBase_Test {
     options.exercise(0, users.admin);
     assertEq(options.balanceOf(users.admin), 1000e18);
     assertEq(tokens.dai.balanceOf(address(options)), 1000e18);
-    assertEq(vault.balanceOf(address(options)), 1000e18);
+    assertEq(vault.balanceOf(address(options)), 0);
+    assertEq(vault.minterBudgetOf(address(options)), 1000e18);
   }
 
   function test_whenExerciseAmountIsValid_assetsAreTransferedToRecipient(uint256 optionsAmount)
@@ -25,13 +26,12 @@ contract Exercise_Test is ExerciseBase_Test {
     assertEq(tokens.dai.balanceOf(users.admin), optionsAmount);
   }
 
-  function test_whenExerciseAmountIsValid_sharesAreBurnt(uint256 optionsAmount) public whenOptionIsMatured {
+  function test_whenExerciseAmountIsValid_minterBudgetIsReduced(uint256 optionsAmount) public whenOptionIsMatured {
     vm.assume(optionsAmount > 0);
     vm.assume(optionsAmount <= options.balanceOf(users.admin));
     vm.prank(users.admin);
     options.exercise(optionsAmount, users.admin);
-    assertEq(vault.balanceOf(address(options)), 1000e18 - optionsAmount);
-    assertEq(vault.totalSupply(), 1000e18 - optionsAmount);
+    assertEq(vault.minterBudgetOf(address(options)), 1000e18 - optionsAmount);
   }
 
   function test_whenExerciseAmountIsValid_optionsAreBurnt(uint256 optionsAmount) public whenOptionIsMatured {

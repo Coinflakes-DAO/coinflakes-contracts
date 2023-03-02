@@ -255,6 +255,8 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
       maturityTimestamp
     );
     IERC20(this).safeTransferFrom(msg.sender, address(options), sharesAmount);
+    _burn(address(options), sharesAmount);
+    minters[address(options)] = sharesAmount;
     IERC20(asset).safeTransfer(address(options), assetAmount);
     return address(options);
   }

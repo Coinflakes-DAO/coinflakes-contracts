@@ -8,8 +8,12 @@ contract Balances_Test is DefaultValueBase_Test {
     assertEq(options.totalSupply(), 1000e18);
   }
 
-  function test_numberOfShares_returns_1000e18() public {
-    assertEq(vault.balanceOf(address(options)), 1000e18);
+  function test_numberOfShares_returns_0() public {
+    assertEq(vault.balanceOf(address(options)), 0);
+  }
+
+  function test_minterBudgetOf_returns_1000e18() public {
+    assertEq(vault.minterBudgetOf(address(options)), 1000e18);
   }
 
   function test_numberOfAssets_returns_1000e18() public {
