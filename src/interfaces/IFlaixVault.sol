@@ -16,6 +16,9 @@ interface IFlaixVault is IERC20 {
   /// @notice Error code for when an option is issued with a maturity below the current minimum.
   error MaturityTooLow();
 
+  /// @notice Error code for when a minter has minted all allowed shares.
+  error MinterBudgetExceeded();
+
   /// @notice Error code for when an asset is already on the allow list.
   error AssetAlreadyOnAllowList();
 
@@ -64,4 +67,7 @@ interface IFlaixVault is IERC20 {
 
   /// @notice Burn the given amount of tokens from the sender of the transaction.
   function burn(uint256 amount) external;
+
+  /// @notice Mint the given amount of tokens for the given recipient.
+  function mint(uint256 amount, address recipient) external;
 }

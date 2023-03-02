@@ -10,7 +10,8 @@ contract Exercise_Test is RevokeBase_Test {
     options.revoke(0, users.admin);
     assertEq(options.balanceOf(users.admin), 1000e18);
     assertEq(tokens.dai.balanceOf(address(options)), 1000e18);
-    assertEq(vault.balanceOf(address(options)), 1000e18);
+    assertEq(vault.balanceOf(address(options)), 0);
+    assertEq(vault.minterBudgetOf(address(options)), 1000e18);
   }
 
   function test_whenRevokeAmountIsValid_assetsAreTransferedToRecipient(uint256 optionsAmount)
@@ -25,13 +26,12 @@ contract Exercise_Test is RevokeBase_Test {
     assertEq(tokens.dai.balanceOf(users.admin), optionsAmount);
   }
 
-  function test_whenExerciseAmountIsValid_sharesAreBurnt(uint256 optionsAmount) public whenOptionIsMatured {
+  function test_whenExerciseAmountIsValid_minter_budget_is_reduced(uint256 optionsAmount) public whenOptionIsMatured {
     vm.assume(optionsAmount > 0);
     vm.assume(optionsAmount <= options.balanceOf(users.admin));
     vm.prank(users.admin);
     options.revoke(optionsAmount, users.admin);
-    assertEq(vault.balanceOf(address(options)), 1000e18 - optionsAmount);
-    assertEq(vault.totalSupply(), 1000e18 - optionsAmount);
+    assertEq(vault.minterBudgetOf(address(options)), 1000e18 - optionsAmount);
   }
 
   function test_whenExerciseAmountIsValid_optionsAreBurnt(uint256 optionsAmount) public whenOptionIsMatured {

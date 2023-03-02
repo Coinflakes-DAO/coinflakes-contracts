@@ -70,7 +70,7 @@ contract FlaixCallOption is ERC20, IFlaixOption, ReentrancyGuard {
     uint256 assetAmount = convertToAssets(amount);
     _burn(msg.sender, amount);
     emit Exercise(recipient, amount, assetAmount);
-    IERC20(vault).safeTransfer(recipient, amount);
+    IFlaixVault(vault).mint(amount, recipient);
     IERC20(asset).safeTransfer(vault, assetAmount);
   }
 
@@ -89,6 +89,7 @@ contract FlaixCallOption is ERC20, IFlaixOption, ReentrancyGuard {
     uint256 assetAmount = convertToAssets(amount);
     emit Revoke(recipient, amount);
     _burn(msg.sender, amount);
+    IFlaixVault(vault).mint(amount, address(this));
     IFlaixVault(vault).burn(amount);
     IERC20(asset).safeTransfer(recipient, assetAmount);
   }

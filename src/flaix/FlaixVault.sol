@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import "./FlaixCallOption.sol";
@@ -23,6 +24,7 @@ import "./FlaixPutOption.sol";
 contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
   using EnumerableSet for EnumerableSet.AddressSet;
   using SafeERC20 for IERC20;
+  using SafeMath for uint256;
   using Math for uint256;
 
   EnumerableSet.AddressSet private _allowedAssets;
@@ -36,6 +38,8 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
   ///         The maturity of the option must be at least 3 days. The minimal
   ///         maturity can be changed by the admin account.
   uint public minimalOptionsMaturity = 3 days;
+
+  mapping(address => uint) public minters;
 
   modifier onlyAdmin() {
     if (_msgSender() != admin) revert IFlaixVault.OnlyAllowedForAdmin();
@@ -106,6 +110,10 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
     return _allowedAssets.at(index);
   }
 
+  function minterBudgetOf(address minter) public view returns (uint) {
+    return minters[minter];
+  }
+
   /// @notice Burns shares from the sender and sends the pro rata amount
   ///         of each vault asset to the recipient in return.
   /// @param amount The amount of shares to burn.
@@ -129,6 +137,16 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
   /// @param amount The amount of shares to burn.
   function burn(uint256 amount) public {
     _burn(msg.sender, amount);
+  }
+
+  function mint(uint amount, address recipient) public {
+    if (minters[msg.sender] < amount) revert IFlaixVault.MinterBudgetExceeded();
+    _mint(recipient, amount);
+  }
+
+  function _mint(address account, uint256 amount) internal override {
+    minters[msg.sender] = minters[msg.sender].sub(amount);
+    super._mint(account, amount);
   }
 
   /// @notice Mints FLAIX call options to the recipient. A call option is a token which can be swapped
@@ -169,6 +187,8 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
       sharesAmount,
       maturityTimestamp
     );
+    minters[address(options)] = sharesAmount;
+
     emit IssueCallOptions(
       address(options),
       recipient,
@@ -180,7 +200,6 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
       maturityTimestamp
     );
     IERC20(asset).safeTransferFrom(msg.sender, address(options), assetAmount);
-    _mint(address(options), sharesAmount);
 
     return address(options);
   }

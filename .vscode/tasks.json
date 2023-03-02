@@ -7,6 +7,20 @@
 			"problemMatcher": [],
 			"label": "forge: test",
 			"detail": "Run forge test command"
+		},
+		{
+			"type": "shell",
+			"command": "anvil --accounts 2 --balance 300",
+			"problemMatcher": [],
+			"label": "anvil: start",
+			"detail": "Run local EVM enviroment"
+		},
+		{
+			"type": "shell",
+			"command": "forge script scripts/Flaix.deploy-local.sol:FlaixDeployLocal --fork-url http://localhost:8545 --broadcast",
+			"problemMatcher": [],
+			"label": "forge: deploy on localhost",
+			"detail": "Deploy Flaix contract on localhost"
 		}
 	]
 }

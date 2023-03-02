@@ -64,7 +64,7 @@ contract IssueCallOptions_Test is IssueCallOptionsBase_Test {
     issueCallOptionsWithValidParams(1000e18);
   }
 
-  function test_whenCalledWithValidParameters_mintsShares()
+  function test_whenCalledWithValidParameters_setsMinterBudget()
     public
     whenDaiIsAllowed
     whenAdminHasDai(1000e18)
@@ -72,8 +72,7 @@ contract IssueCallOptions_Test is IssueCallOptionsBase_Test {
   {
     vm.prank(users.admin);
     address options = issueCallOptionsWithValidParams(1000e18);
-    assertEq(vault.balanceOf(options), 1000e18);
-    assertEq(vault.totalSupply(), 1000e18);
+    assertEq(vault.minterBudgetOf(address(options)), 1000e18);
   }
 
   function test_whenCalledWithValidParameters_transfersAssetsToOptions()
