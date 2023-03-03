@@ -11,7 +11,7 @@ This repository contains the source code for the Coinflakes DAO smart contracts.
 
 Coinflakes DAO is a decentralized and self-innovating investment fund for crypto projects in the most promising areas of the sector.
 
-The DAO is meant to maintain different funds, each of which is based on a different sector of the crypto industry. But for starters, we are launching the FLAIX fund, which is based on the AI sector.
+The DAO is meant to maintain different funds and strategies, each of which is based on a different sector of the crypto industry. But for starters, we are launching the FLAIX fund, which is based on the AI sector.
 
 ### Project Structure
 
