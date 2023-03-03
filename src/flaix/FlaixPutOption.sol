@@ -11,19 +11,18 @@ import "../interfaces/IFlaixOption.sol";
 
 /// @title FlaixPutOption Contract
 /// @author Ned Albo
-/// @notice Contract for FlaixPutOptions. Put options are used to sell an
-///         underlying asset on behalf of the vault. If put options are
-///         issued, the issuer transfers a certain amount of shares
-///         to the options contract and the vault transfers a certain amount of
-///         the underlying asset. After that, the options
-///         contract burns the shares and holds the underlying assets until the option
-///         matures. If on maturity, an option is exercised the options owner
-///         receives the underlying assets pro rata to the amount of options exercised.
-///         If instead the option owner
-///         decides to revoke the options, she receives an equal amount of shares to
-///         the amount of options revoked and the vault receives the underlying assets from
-///         the options contract pro rata to the amount of options revoked. Revoking options
-///         is meant as a reverse operation to exercising options.
+/// @notice This is the contract for FlaixPutOptions. Put options are used to
+/// sell an underlying asset on behalf of the vault. If put options are
+/// issued, the issuer transfers a certain amount of shares to the options
+/// contract, and the vault transfers a certain amount of the underlying asset.
+/// After that, the options contract burns the shares and holds the underlying
+/// assets until the option matures. If the option is exercised upon maturity,
+/// the options owner receives the underlying assets pro rata to the amount of
+/// options exercised. If instead, the option owner decides to revoke the
+/// options, she receives an equal amount of shares to the amount of options
+/// revoked, and the vault receives the underlying assets from the options
+/// contract pro rata to the amount of options revoked. Revoking options is
+/// meant as a reverse operation to exercising options.
 contract FlaixPutOption is ERC20, IFlaixOption, ReentrancyGuard {
   using SafeERC20 for IERC20;
   using Math for uint256;
@@ -71,9 +70,9 @@ contract FlaixPutOption is ERC20, IFlaixOption, ReentrancyGuard {
     emit Issue(minter_, totalSupply_, maturityTimestamp_);
   }
 
-  /// @notice Exercise the given amount of options. The options are burnt as well
-  ///         as an equal amount of vault shares. The recipient receives the
-  ///         underlying assets pro rata to the amount of options exercised.
+  /// @notice This function exercises the specified amount of options, which are burned,
+  /// along with an equivalent amount of vault shares. The recipient receives
+  /// the underlying assets pro rata to the amount of options exercised.
   /// @param recipient The address of the recipient.
   /// @param amount The amount of options to exercise.
   function exercise(uint256 amount, address recipient) public onlyWhenMatured nonReentrant {
@@ -87,14 +86,16 @@ contract FlaixPutOption is ERC20, IFlaixOption, ReentrancyGuard {
 
   /// @notice Returns the amount of underlying assets for the given amount of
   ///         options when exercised.
+  /// @param amount The amount of options to exercise.
+  /// @return The amount of underlying assets.
   function convertToAssets(uint256 amount) public view returns (uint256) {
     return IERC20(asset).balanceOf(address(this)).mulDiv(amount, totalSupply());
   }
 
-  /// @notice Revoke the given amount of options. Transfers an equal amount
-  ///         of shares to the recipient as the amouunt of options revoked.
-  ///         Transfers a pro rata amount of underlying assets from the
-  ///         options contract to the vault.
+  /// @notice This function revokes the specified amount of options and transfers
+  /// an equivalent amount of vault shares to the recipient. Additionally,
+  /// it transfers a pro rata amount of underlying assets from the options
+  /// contract to the vault.
   /// @param recipient The address of the recipient.
   /// @param amount The amount of options to revoke.
   function revoke(uint256 amount, address recipient) public onlyWhenMatured nonReentrant {

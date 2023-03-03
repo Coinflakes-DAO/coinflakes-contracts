@@ -11,17 +11,17 @@ import "../interfaces/IFlaixVault.sol";
 
 /// @title FlaixCallOption Contract
 /// @author Ned Albo
-/// @notice Contract for FlaixCallOptions. Call options are used to buy an
-///         underlying asset on behalf of the vault. If call options are
-///         issued, the issuer transfers a certain amount of underlying assets
-///         to the options contract. After that, the options
-///         the underlying assets until the option
-///         matures. If on maturity, an option is exercised the options owner
-///         receives the an equal amount of shares as the exercised amount of options
-///         while the vault receives the assets corresponding to the
-///         options owner share of the total supply of the options (pro rata).
-///         If instead the option owner decides to revoke the option, the pro rata amount of the underlying assets
-///         are transferred to the option owner and no shares are minted.
+/// @notice This is the contract for FlaixCallOptions. Call options are used to
+/// buy an underlying asset on behalf of the vault. If call options are
+/// issued, the issuer transfers a certain amount of underlying assets to
+/// the options contract. After that, the options contract holds
+/// the underlying assets until the option matures. If the option is
+/// exercised upon maturity, the options owner receives an equal amount
+/// of shares as the exercised amount of options, while the vault receives
+/// the assets corresponding to the options owner's share of the total
+/// supply of the options (pro rata). If instead the option owner decides
+/// to revoke the option, the pro rata amount of the underlying assets
+/// is transferred to the option owner, and no shares are minted.
 contract FlaixCallOption is ERC20, IFlaixOption, ReentrancyGuard {
   using SafeERC20 for IERC20;
   using Math for uint256;
@@ -58,11 +58,11 @@ contract FlaixCallOption is ERC20, IFlaixOption, ReentrancyGuard {
     emit Issue(minter_, totalSupply_, maturityTimestamp_);
   }
 
-  /// @notice Exercise the given amount of options and transfers the result to
-  ///         the recipient. The amount of options is burned while the same
-  ///         amount of shares is minted for the recipient.
-  ///         After that, a corresponding amount of the underlying assets is transferred
-  ///         from the options contract to the vault.
+  /// @notice This function exercises the given amount of options and transfers the
+  /// result to the recipient. The specified amount of options is burned, while
+  /// an equivalent amount of shares is minted for the recipient. Subsequently,
+  /// a corresponding amount of the underlying assets is transferred from the
+  /// options contract to the vault.
   /// @param recipient The address to which the result is transferred.
   /// @param amount The amount of options to exercise.
   function exercise(uint256 amount, address recipient) public onlyWhenMatured nonReentrant {
@@ -75,14 +75,19 @@ contract FlaixCallOption is ERC20, IFlaixOption, ReentrancyGuard {
 
   /// @notice Returns the amount of underlying assets for the given amount of
   ///         options when the option is exercised.
+  /// @param amount The amount of options to exercise.
+  /// @return The amount of underlying assets.
   function convertToAssets(uint256 amount) public view returns (uint256) {
     return IERC20(asset).balanceOf(address(this)).mulDiv(amount, totalSupply());
   }
 
-  /// @notice Revoke the given amount of options. The amount of options is burned.
-  ///         After that, a corresponding amount of the underlying assets is transferred
-  ///         from the options contract to the recipient. This function can be used to
-  ///         reverse the effect of issuing options or to remove options from the market.
+  /// @notice This function revokes the specified amount of options by burning them.
+  /// Subsequently, a corresponding amount of the underlying assets is
+  /// transferred from the options contract to the recipient. This function
+  /// can be used to reverse the effect of issuing options or to remove options
+  /// from the market.
+  /// @param recipient The address to which the underlying assets are transferred.
+  /// @param amount The amount of options to revoke.
   function revoke(uint256 amount, address recipient) public onlyWhenMatured nonReentrant {
     uint256 assetAmount = convertToAssets(amount);
     emit Revoke(recipient, amount);

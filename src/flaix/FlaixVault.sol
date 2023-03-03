@@ -14,13 +14,13 @@ import "./FlaixPutOption.sol";
 
 /// @title FlaixVault
 /// @author Ned Albo
-/// @notice This contract describes the FlaixVault contract which is a
-///         vehicle for investing in AI tokens. The contract holds tokens
-///         which hopefully will appreciate in value over time.
-///         Shares of the vault are represented by the FLAIX token which are
-///         a pro rata share of the vault's token holdings.
+/// @notice This contract pertains to the FlaixVault contract, which
+///         serves as a means of investing in AI tokens. The contract
+///         is designed to hold tokens that are expected to increase in
+///         value over time. Ownership of the vault is represented by
+///         the FLAIX token, which is a proportional share of the tokens
+///         held by the vault.
 /// @dev This contract is based on the OpenZeppelin ERC20 contract.
-
 contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
   using EnumerableSet for EnumerableSet.AddressSet;
   using SafeERC20 for IERC20;
@@ -33,10 +33,10 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
   ///         by a multisig contract or even better a DAO in the future.
   address public admin;
 
-  /// @notice When an option is issued, the issuer chooses a value for the maturity of the option.
-  ///         The maturity of the option is the time at which the option can be exercised.
-  ///         The maturity of the option must be at least 3 days. The minimal
-  ///         maturity can be changed by the admin account.
+  /// @notice When an option is issued, the issuer selects a maturity value, which is the
+  /// point in time when the option can be exercised. The maturity period must be a
+  /// minimum of three days, but the admin account has the ability to adjust the
+  /// minimum maturity period.
   uint public minimalOptionsMaturity = 3 days;
 
   /// @notice The minting budget for each account which is allowed to mint tokens.
@@ -64,7 +64,6 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
 
   /// @notice Changes the minimal options maturity. The minimal options maturity is the minimal maturity of options
   ///         that can be issued by the vault.
-  ///         This function can only be called by an account with the CHANGE_MINIMAL_OPTIONS_MATURITY_ROLE.
   /// @param newMaturity The new minimal options maturity.
   function changeMinimalOptionsMaturity(uint newMaturity) public onlyAdmin {
     if (newMaturity < 3 days) revert IFlaixVault.MaturityChangeBelowLimit();
@@ -72,7 +71,6 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
   }
 
   /// @notice Adds an asset to the allowed asset list of the vault
-  ///         This function can only be called by an account with the ADD_REMOVE_ASSET_ROLE.
   /// @param assetAddress The address of the asset to add to the allowed asset list.
   function allowAsset(address assetAddress) public onlyAdmin {
     if (assetAddress == address(0)) revert IFlaixVault.AssetCannotBeNull();
@@ -80,10 +78,10 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
     emit AssetAllowed(assetAddress);
   }
 
-  /// @notice Removes an asset from the allowed asset list of the vault. Note that this
-  ///         only prevents new assets from being added to the vault. It does not remove
-  ///         existing assets nor does it remove the right to withdraw existing assets.
-  ///         This function can only be called by an account with the ADD_REMOVE_ASSET_ROLE.
+  /// @notice This function removes an asset from the vault's list of allowed assets. It is
+  ///         important to note that this action only prevents new assets from being added
+  ///         to the vault, and does not remove any existing assets or the right to
+  ///         withdraw existing assets.
   /// @param assetAddress  The address of the asset to remove from the allowed asset list.
   function disallowAsset(address assetAddress) public onlyAdmin {
     if (!_allowedAssets.remove(assetAddress)) revert AssetNotOnAllowList();
@@ -111,16 +109,16 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
     return _allowedAssets.at(index);
   }
 
-  /// @notice The minting budger of an account. Only CallOptions or PutOptions
-  ///         can be mint tokens. The minting budget is the amount of tokens
-  ///         that can be minted by the account and is reduced by the amount
-  ///         of tokens the account has already minted.
+  /// @notice This function pertains to the minting budget of an account, and only allows
+  ///         CallOptions or PutOptions to mint shares. The minting budget represents the
+  ///         maximum number of shares that can be minted by the account, and is reduced by
+  ///         the amount of shares that the account has already minted.
   function minterBudgetOf(address minter) public view returns (uint) {
     return minters[minter];
   }
 
-  /// @notice Burns shares from the sender and sends the pro rata amount
-  ///         of each vault asset to the recipient in return.
+  /// @notice This function burns shares from the sender and in exchange, sends the
+  ///         recipient a proportional amount of each vault asset.
   /// @param amount The amount of shares to burn.
   /// @param recipient The address to send the vault assets to.
   function redeemShares(uint256 amount, address recipient) public nonReentrant {
@@ -144,6 +142,8 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
     _burn(msg.sender, amount);
   }
 
+  /// @notice Mints shares to the recipient. Minting shares is only possible
+  ///         if the sender has a minting budget which is equal or greater than the amount.
   function mint(uint amount, address recipient) public {
     if (minters[msg.sender] < amount) revert IFlaixVault.MinterBudgetExceeded();
     _mint(recipient, amount);
@@ -154,13 +154,15 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
     super._mint(account, amount);
   }
 
-  /// @notice Mints FLAIX call options to the recipient. A call option is a token which can be swapped
-  ///         for shares of the vault at a certain time in the future.  The call option is minted with
-  ///         a certain amount of shares in exchange for a certain amount of an underlying asset. On
-  ///         minting the backing asset is transferred from the minter to the options contract and the options
-  ///         contract is granted the right to mint an equal amount of vault shares. After that,
-  ///         the call option contract should own the underlying assets as well as is prepared to mint shares.
-  ///         The recipinet receives all of the call options tokens in return for his assets.
+  /// @notice This function mints FLAIX call options to the recipient. A call option
+  /// is a token that can be exchanged for shares of the vault at a specified
+  /// time in the future. The call option is minted by exchanging a certain
+  /// amount of shares for a specific amount of an underlying asset. Upon
+  /// minting, the backing asset is transferred from the minter to the options
+  /// contract, and the options contract is granted the right to mint an equal
+  /// amount of vault shares. Subsequently, the call option contract should
+  /// own the underlying assets and be prepared to mint shares. The recipient
+  /// will receive all of the call option tokens in exchange for their assets.
   /// @param name The name of the call option.
   /// @param symbol The symbol of the call option.
   /// @param sharesAmount The amount of shares to be minted to the call option contract.
@@ -208,16 +210,16 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
     return address(options);
   }
 
-  /// @notice Mints FLAIX put options to the recipient. A put option is a token which can be swapped
-  ///         for underlying assets from the vault at a certain time in the future.
-  ///         The put option is minted with a certain amount of underlying assets in exchange
-  ///         for a certain amount of vault shares. On minting the vault shares are burned
-  ///         from the issuer and the
-  ///         vault matches this with a given amount of underlying assets transferring them into the
-  ///         options contract. After that, the put option contract should own the underlying assets from
-  ///         the vault and the right to mint back the burned shares in case the options are revoked.
-  ///         The recipient receives all of the put options tokens
-  ///         in return for her shares.
+  /// @notice This function mints FLAIX put options to the recipient. A put option
+  /// is a token that can be exchanged for underlying assets from the vault
+  /// at a specified time in the future. The put option is minted by exchanging
+  /// a certain amount of underlying assets for a specific amount of vault shares.
+  /// Upon minting, the vault shares are burned from the issuer, and the vault matches
+  /// this by transferring a certain amount of underlying assets into the options
+  /// contract. Subsequently, the put option contract should own the underlying assets
+  /// from the vault and have the right to mint back the burned shares in case the
+  /// options are revoked. The recipient will receive all of the put option tokens in
+  /// exchange for their shares.
   /// @param name The name of the put option.
   /// @param symbol The symbol of the put option.
   /// @param sharesAmount The amount of shares to be transferred from the issuer to the contract.
