@@ -25,6 +25,8 @@ interface IFlaixOption is IERC20Metadata {
   /// @notice Returns the address of the underlying asset.
   function asset() external view returns (address);
 
+  /// @notice This function should implement the logic to exercise the given
+  ///         amount of options and transfer the result to the recipient.
   function exercise(uint256 amount, address recipient) external;
 
   /// @notice Returns the amount of underlying assets for the given amount of

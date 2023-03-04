@@ -10,7 +10,6 @@ import "../interfaces/IFlaixOption.sol";
 import "../interfaces/IFlaixVault.sol";
 
 /// @title FlaixCallOption Contract
-/// @author Ned Albo
 /// @notice This is the contract for FlaixCallOptions. Call options are used to
 /// buy an underlying asset on behalf of the vault. If call options are
 /// issued, the issuer transfers a certain amount of underlying assets to

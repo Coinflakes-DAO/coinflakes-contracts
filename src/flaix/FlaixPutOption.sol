@@ -10,7 +10,6 @@ import "../interfaces/IFlaixVault.sol";
 import "../interfaces/IFlaixOption.sol";
 
 /// @title FlaixPutOption Contract
-/// @author Ned Albo
 /// @notice This is the contract for FlaixPutOptions. Put options are used to
 /// sell an underlying asset on behalf of the vault. If put options are
 /// issued, the issuer transfers a certain amount of shares to the options
