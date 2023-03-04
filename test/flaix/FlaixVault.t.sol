@@ -2,7 +2,10 @@
 pragma solidity ^0.8.0;
 
 import {Base_Test} from "../Base.t.sol";
-import {FlaixVault} from "../../src/flaix/FlaixVault.sol";
+import {FlaixVault} from "@src/flaix/FlaixVault.sol";
+import {FlaixCallOption} from "@src/flaix/FlaixCallOption.sol";
+import {FlaixPutOption} from "@src/flaix/FlaixPutOption.sol";
+import {FlaixOptionFactory} from "@src/flaix/FlaixOptionFactory.sol";
 
 contract FlaixVault_Test is Base_Test {
   FlaixVault public vault;
@@ -10,7 +13,10 @@ contract FlaixVault_Test is Base_Test {
   function setUp() public virtual override {
     Base_Test.setUp();
     vm.prank(users.deployer);
-    vault = new FlaixVault();
+    address callOptionImplementation = address(new FlaixCallOption());
+    address putOptionImplementation = address(new FlaixPutOption());
+    address optionFactory = address(new FlaixOptionFactory(callOptionImplementation, putOptionImplementation));
+    vault = new FlaixVault(optionFactory);
     setUp_UserRoles();
   }
 

@@ -4,6 +4,8 @@ pragma solidity ^0.8.0;
 import {Base_Test} from "../Base.t.sol";
 import {FlaixVault} from "@src/flaix/FlaixVault.sol";
 import {FlaixCallOption} from "@src/flaix/FlaixCallOption.sol";
+import {FlaixPutOption} from "@src/flaix/FlaixPutOption.sol";
+import {FlaixOptionFactory} from "@src/flaix/FlaixOptionFactory.sol";
 
 contract FlaixCallOptionBase_Test is Base_Test {
   FlaixVault public vault;
@@ -16,7 +18,10 @@ contract FlaixCallOptionBase_Test is Base_Test {
   }
 
   function setUp_vault() public {
-    vault = new FlaixVault();
+    address callOptionImplementation = address(new FlaixCallOption());
+    address putOptionImplementation = address(new FlaixPutOption());
+    address optionFactory = address(new FlaixOptionFactory(callOptionImplementation, putOptionImplementation));
+    vault = new FlaixVault(optionFactory);
     vm.prank(vault.admin());
     vault.changeAdmin(users.admin);
   }

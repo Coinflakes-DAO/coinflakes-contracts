@@ -10,6 +10,13 @@
 		},
 		{
 			"type": "shell",
+			"command": "forge test -vvv --mt \"(_only)$\"",
+			"problemMatcher": [],
+			"label": "forge: test 'only'",
+			"detail": "Run forge test command for only keyword"
+		},
+		{
+			"type": "shell",
 			"command": "anvil --accounts 2 --balance 300",
 			"problemMatcher": [],
 			"label": "anvil: start",

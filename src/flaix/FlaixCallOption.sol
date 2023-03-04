@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.16;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/math/Math.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin-upgradeable/contracts/token/ERC20/ERC20Upgradeable.sol";
+import "@openzeppelin-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin-upgradeable/contracts/token/ERC20/utils/SafeERC20Upgradeable.sol";
+import "@openzeppelin-upgradeable/contracts/utils/math/MathUpgradeable.sol";
+import "@openzeppelin-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
 
 import "../interfaces/IFlaixOption.sol";
 import "../interfaces/IFlaixVault.sol";
@@ -21,15 +22,15 @@ import "../interfaces/IFlaixVault.sol";
 /// supply of the options (pro rata). If instead the option owner decides
 /// to revoke the option, the pro rata amount of the underlying assets
 /// is transferred to the option owner, and no shares are minted.
-contract FlaixCallOption is ERC20, IFlaixOption, ReentrancyGuard {
-  using SafeERC20 for IERC20;
-  using Math for uint256;
+contract FlaixCallOption is ERC20Upgradeable, IFlaixOption, ReentrancyGuardUpgradeable {
+  using SafeERC20Upgradeable for IERC20Upgradeable;
+  using MathUpgradeable for uint256;
 
-  address public immutable asset;
+  address public asset;
 
-  address public immutable vault;
+  address public vault;
 
-  uint public immutable maturityTimestamp;
+  uint public maturityTimestamp;
 
   modifier onlyWhenMatured() {
     //slither-disable-next-line timestamp
@@ -37,7 +38,14 @@ contract FlaixCallOption is ERC20, IFlaixOption, ReentrancyGuard {
     _;
   }
 
-  constructor(
+  /// @param name The name of the options.
+  /// @param symbol The symbol of the options.
+  /// @param asset_ The address of the underlying asset.
+  /// @param minter_ The address of the minter.
+  /// @param vault_ The address of the vault.
+  /// @param totalSupply_ The total supply of the options.
+  /// @param maturityTimestamp_ The timestamp at which the options mature.
+  function initialize(
     string memory name,
     string memory symbol,
     address asset_,
@@ -45,7 +53,8 @@ contract FlaixCallOption is ERC20, IFlaixOption, ReentrancyGuard {
     address vault_,
     uint256 totalSupply_,
     uint maturityTimestamp_
-  ) ERC20(name, symbol) {
+  ) public initializer {
+    ERC20Upgradeable.__ERC20_init(name, symbol);
     //slither-disable-next-line timestamp
     require(maturityTimestamp_ >= block.timestamp, "FlaixCallOption: maturity in the past");
     require(asset_ != address(0), "FlaixPutOption: asset is zero address");
@@ -69,7 +78,7 @@ contract FlaixCallOption is ERC20, IFlaixOption, ReentrancyGuard {
     _burn(msg.sender, amount);
     emit Exercise(recipient, amount, assetAmount);
     IFlaixVault(vault).mint(amount, recipient);
-    IERC20(asset).safeTransfer(vault, assetAmount);
+    IERC20Upgradeable(asset).safeTransfer(vault, assetAmount);
   }
 
   /// @notice Returns the amount of underlying assets for the given amount of
@@ -93,6 +102,6 @@ contract FlaixCallOption is ERC20, IFlaixOption, ReentrancyGuard {
     _burn(msg.sender, amount);
     IFlaixVault(vault).mint(amount, address(this));
     IFlaixVault(vault).burn(amount);
-    IERC20(asset).safeTransfer(recipient, assetAmount);
+    IERC20Upgradeable(asset).safeTransfer(recipient, assetAmount);
   }
 }

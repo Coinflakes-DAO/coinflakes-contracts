@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.16;
 
-import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import "@openzeppelin-upgradeable/contracts/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 
-interface IFlaixOption is IERC20Metadata {
+interface IFlaixOption is IERC20MetadataUpgradeable {
   /// @notice Error emitted when the option contract is not matured yet.
   error OptionNotMaturedYet();
 
@@ -15,6 +15,17 @@ interface IFlaixOption is IERC20Metadata {
 
   /// @notice Emitted when this option contract is revoked.
   event Revoke(address indexed recipient, uint256 amount);
+
+  /// @notice Initializes the option contract.
+  function initialize(
+    string memory name,
+    string memory symbol,
+    address asset_,
+    address minter_,
+    address vault_,
+    uint256 totalSupply_,
+    uint maturityTimestamp_
+  ) external;
 
   /// @notice Returns the address of the vault that issued the options.
   function vault() external view returns (address);

@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.16;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/math/Math.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin-upgradeable/contracts/token/ERC20/ERC20Upgradeable.sol";
+import "@openzeppelin-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin-upgradeable/contracts/token/ERC20/utils/SafeERC20Upgradeable.sol";
+import "@openzeppelin-upgradeable/contracts/utils/math/MathUpgradeable.sol";
+import "@openzeppelin-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
 
 import "../interfaces/IFlaixVault.sol";
 import "../interfaces/IFlaixOption.sol";
@@ -22,18 +23,18 @@ import "../interfaces/IFlaixOption.sol";
 /// revoked, and the vault receives the underlying assets from the options
 /// contract pro rata to the amount of options revoked. Revoking options is
 /// meant as a reverse operation to exercising options.
-contract FlaixPutOption is ERC20, IFlaixOption, ReentrancyGuard {
-  using SafeERC20 for IERC20;
-  using Math for uint256;
+contract FlaixPutOption is ERC20Upgradeable, IFlaixOption, ReentrancyGuardUpgradeable {
+  using SafeERC20Upgradeable for IERC20Upgradeable;
+  using MathUpgradeable for uint256;
 
   /// @notice The address of the vault which issued the options.
-  address public immutable vault;
+  address public vault;
 
   /// @notice The address of the underlying asset.
-  address public immutable asset;
+  address public asset;
 
   /// @notice The timestamp at which the options mature.
-  uint public immutable maturityTimestamp;
+  uint public maturityTimestamp;
 
   modifier onlyWhenMatured() {
     //slither-disable-next-line timestamp
@@ -48,7 +49,7 @@ contract FlaixPutOption is ERC20, IFlaixOption, ReentrancyGuard {
   /// @param vault_ The address of the vault.
   /// @param totalSupply_ The total supply of the options.
   /// @param maturityTimestamp_ The timestamp at which the options mature.
-  constructor(
+  function initialize(
     string memory name,
     string memory symbol,
     address asset_,
@@ -56,7 +57,8 @@ contract FlaixPutOption is ERC20, IFlaixOption, ReentrancyGuard {
     address vault_,
     uint256 totalSupply_,
     uint maturityTimestamp_
-  ) ERC20(name, symbol) {
+  ) public initializer {
+    ERC20Upgradeable.__ERC20_init(name, symbol);
     //slither-disable-next-line timestamp
     require(maturityTimestamp_ >= block.timestamp, "FlaixPutOption: maturity in the past");
     require(asset_ != address(0), "FlaixPutOption: asset is zero address");
@@ -77,7 +79,7 @@ contract FlaixPutOption is ERC20, IFlaixOption, ReentrancyGuard {
   function exercise(uint256 amount, address recipient) public onlyWhenMatured nonReentrant {
     uint256 assetAmount = convertToAssets(amount);
     emit Exercise(recipient, amount, assetAmount);
-    IERC20(asset).safeTransfer(recipient, assetAmount);
+    IERC20Upgradeable(asset).safeTransfer(recipient, assetAmount);
     IFlaixVault(vault).mint(amount, address(this));
     IFlaixVault(vault).burn(amount);
     _burn(msg.sender, amount);
@@ -88,7 +90,7 @@ contract FlaixPutOption is ERC20, IFlaixOption, ReentrancyGuard {
   /// @param amount The amount of options to exercise.
   /// @return The amount of underlying assets.
   function convertToAssets(uint256 amount) public view returns (uint256) {
-    return IERC20(asset).balanceOf(address(this)).mulDiv(amount, totalSupply());
+    return IERC20Upgradeable(asset).balanceOf(address(this)).mulDiv(amount, totalSupply());
   }
 
   /// @notice This function revokes the specified amount of options and transfers
@@ -100,7 +102,7 @@ contract FlaixPutOption is ERC20, IFlaixOption, ReentrancyGuard {
   function revoke(uint256 amount, address recipient) public onlyWhenMatured nonReentrant {
     emit Revoke(recipient, amount);
     IFlaixVault(vault).mint(amount, recipient);
-    IERC20(asset).safeTransfer(vault, convertToAssets(amount));
+    IERC20Upgradeable(asset).safeTransfer(vault, convertToAssets(amount));
     _burn(msg.sender, amount);
   }
 }

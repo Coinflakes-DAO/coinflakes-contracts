@@ -9,8 +9,9 @@ import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-import "./FlaixCallOption.sol";
-import "./FlaixPutOption.sol";
+import "../interfaces/IFlaixVault.sol";
+import "../interfaces/IFlaixOption.sol";
+import "./FlaixOptionFactory.sol";
 
 /// @title FlaixVault
 /// @notice This contract pertains to the FlaixVault contract, which
@@ -27,6 +28,9 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
   using Math for uint256;
 
   EnumerableSet.AddressSet private _allowedAssets;
+
+  /// @notice The address of the FlaixOptionFactory contract.
+  FlaixOptionFactory public immutable optionFactory;
 
   /// @notice The address of the admin account. The admin account should be replaced
   ///         by a multisig contract or even better a DAO in the future.
@@ -46,8 +50,9 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
   }
 
   /// @dev Constructor
-  constructor() ERC20("Coinflakes AI Vault", "FLAIX") {
+  constructor(address optionFactory_) ERC20("Coinflakes AI Vault", "FLAIX") {
     admin = _msgSender();
+    optionFactory = FlaixOptionFactory(optionFactory_);
     emit AdminChanged(admin, address(0));
   }
 
@@ -144,7 +149,7 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
     if (maturityTimestamp < block.timestamp + minimalOptionsMaturity) revert IFlaixVault.MaturityTooLow();
     if (!_allowedAssets.contains(asset)) revert IFlaixVault.AssetNotOnAllowList();
 
-    FlaixCallOption options = new FlaixCallOption(
+    address options = optionFactory.createCallOption(
       name,
       symbol,
       asset,
@@ -153,21 +158,13 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
       sharesAmount,
       maturityTimestamp
     );
-    minters[address(options)] = sharesAmount;
+    //slither-disable-next-line reentrancy-benign
+    minters[options] = sharesAmount;
 
-    emit IssueCallOptions(
-      address(options),
-      recipient,
-      name,
-      symbol,
-      sharesAmount,
-      asset,
-      assetAmount,
-      maturityTimestamp
-    );
-    IERC20(asset).safeTransferFrom(msg.sender, address(options), assetAmount);
+    emit IssueCallOptions(options, recipient, name, symbol, sharesAmount, asset, assetAmount, maturityTimestamp);
+    IERC20(asset).safeTransferFrom(msg.sender, options, assetAmount);
 
-    return address(options);
+    return options;
   }
 
   /// @inheritdoc IFlaixVault
@@ -184,7 +181,7 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
     if (maturityTimestamp < block.timestamp + minimalOptionsMaturity) revert IFlaixVault.MaturityTooLow();
     if (!_allowedAssets.contains(asset)) revert IFlaixVault.AssetNotOnAllowList();
 
-    FlaixPutOption options = new FlaixPutOption(
+    address options = optionFactory.createPutOption(
       name,
       symbol,
       asset,
@@ -193,20 +190,12 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
       sharesAmount,
       maturityTimestamp
     );
-    emit IssuePutOptions(
-      address(options),
-      recipient,
-      name,
-      symbol,
-      sharesAmount,
-      asset,
-      assetAmount,
-      maturityTimestamp
-    );
-    IERC20(this).safeTransferFrom(msg.sender, address(options), sharesAmount);
-    _burn(address(options), sharesAmount);
-    minters[address(options)] = sharesAmount;
-    IERC20(asset).safeTransfer(address(options), assetAmount);
-    return address(options);
+    emit IssuePutOptions(options, recipient, name, symbol, sharesAmount, asset, assetAmount, maturityTimestamp);
+    IERC20(this).safeTransferFrom(msg.sender, options, sharesAmount);
+    _burn(options, sharesAmount);
+    //slither-disable-next-line reentrancy-benign
+    minters[options] = sharesAmount;
+    IERC20(asset).safeTransfer(options, assetAmount);
+    return options;
   }
 }
