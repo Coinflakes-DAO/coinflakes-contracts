@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.16;
 
 import "forge-std/Script.sol";
 import "@src/flaix/FlaixVault.sol";
@@ -8,7 +8,7 @@ import "@src/flaix/FlaixPutOption.sol";
 import "@src/flaix/FlaixOptionFactory.sol";
 import "@src/utils/MockERC20.sol";
 
-contract FlaixDeployLocal is Script {
+contract FlaixDeploySepolia is Script {
   function run() public {
     uint deployerPrivateKey = vm.envUint("PRIVATE_KEY");
     vm.startBroadcast(deployerPrivateKey);
