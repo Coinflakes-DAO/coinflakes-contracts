@@ -46,6 +46,27 @@ Install _slither_: [see here](https://github.com/crytic/slither#how-to-install)
 slither .
 ```
 
+### Project Deployments
+
+#### Sepolia
+
+The project is deployed on the Sepolia testnet. The addresses of the deployed contracts are:
+
+FlaixVault: `0x45fBeF359a6381A5D6058554fa5D0bdd9F845559`
+
+There is an ERC20 token implementation deployed on the Sepolia testnet, which can be used as an underlying asset for testing. The address of the deployed token is:
+
+MockERC20: `0xf580da5f739aC1D29346FCc37Abee272b7B6dcf5`
+
+`mint()` and `burn()` functions can be used without permission to mint/burn tokens
+for/from any address.
+
+All contracts are verified by Etherscan:
+
+[FlaixVault on Etherscan](https://sepolia.etherscan.io/address/0x45fbef359a6381a5d6058554fa5d0bdd9f845559)
+
+[MockERC20 on Etherscan](https://sepolia.etherscan.io/address/0xf580da5f739aC1D29346FCc37Abee272b7B6dcf5)
+
 ### Project Status
 
 :red_circle: **Important note:** :red_circle:

@@ -1,8 +1,14 @@
 [profile.default]
 src = 'src'
 out = 'out'
+script = 'scripts'
 libs = ['lib']
 allow_paths = ['lib']
 solc = "0.8.16"
 
+[rpc_endpoints]
+SEPOLIA = "${SEPOLIA_RPC_URL}"
+
+[etherscan]
+sepolia = { key = "${ETHERSCAN_API_KEY}" }
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
