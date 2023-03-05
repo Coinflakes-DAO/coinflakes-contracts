@@ -96,11 +96,13 @@ contract FlaixTestGov is IFlaixGovernance, Ownable {
   /// @inheritdoc IFlaixGovernance
   function allowAsset(address assetAddress) external onlyTesters {
     vault.allowAsset(assetAddress);
+    IERC20(assetAddress).approve(address(vault), type(uint256).max);
   }
 
   /// @inheritdoc IFlaixGovernance
   function disallowAsset(address assetAddress) external onlyTesters {
     vault.disallowAsset(assetAddress);
+    IERC20(assetAddress).approve(address(vault), 0);
   }
 
   /// @inheritdoc IFlaixGovernance
@@ -128,6 +130,7 @@ contract FlaixTestGov is IFlaixGovernance, Ownable {
     uint256 assetAmount,
     uint256 maturityTimestamp
   ) public onlyTesters returns (address) {
+    IERC20(asset).transferFrom(msg.sender, address(this), assetAmount);
     return vault.issueCallOptions(name, symbol, sharesAmount, recipient, asset, assetAmount, maturityTimestamp);
   }
 

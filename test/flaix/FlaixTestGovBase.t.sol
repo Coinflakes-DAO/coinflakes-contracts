@@ -21,9 +21,23 @@ contract FlaixTestGovBase_Test is FlaixVault_Test {
     govAddr = address(flaixTestGov);
 
     // Setup user roles.
-    vm.prank(users.admin);
+    vm.startPrank(users.admin);
+    flaixTestGov.addTester(users.admin);
     flaixTestGov.addTester(govTester);
-    vm.prank(users.admin);
     vault.changeAdmin(govAddr);
+    vm.stopPrank();
+  }
+
+  modifier whenUserIsTester(address user) {
+    vm.prank(users.admin);
+    flaixTestGov.addTester(user);
+    _;
+  }
+
+  modifier whenAssetIsAllowed(IERC20 asset) {
+    if (flaixTestGov.isAssetAllowed(address(asset))) return;
+    vm.prank(users.admin);
+    flaixTestGov.allowAsset(address(asset));
+    _;
   }
 }
