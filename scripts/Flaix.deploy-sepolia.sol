@@ -6,6 +6,7 @@ import "@src/flaix/FlaixVault.sol";
 import "@src/flaix/FlaixCallOption.sol";
 import "@src/flaix/FlaixPutOption.sol";
 import "@src/flaix/FlaixOptionFactory.sol";
+import "@src/flaix/FlaixTestGov.sol";
 import "@src/utils/MockERC20.sol";
 
 contract FlaixDeploySepolia is Script {
@@ -20,6 +21,10 @@ contract FlaixDeploySepolia is Script {
 
     FlaixVault vault = new FlaixVault(address(optionFactory));
     console.log("FlaixVault deployed at: ", address(vault));
+
+    FlaixTestGov gov = new FlaixTestGov(address(vault));
+    console.log("FlaixTestGov deployed at: ", address(gov));
+    vault.changeAdmin(address(gov));
     vm.stopBroadcast();
   }
 }

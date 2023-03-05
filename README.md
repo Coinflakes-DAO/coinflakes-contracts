@@ -52,20 +52,27 @@ slither .
 
 The project is deployed on the Sepolia testnet. The addresses of the deployed contracts are:
 
-FlaixVault: `0x45fBeF359a6381A5D6058554fa5D0bdd9F845559`
+FlaixVault: `0xBf24F7580c99Aae5A4872639E97C1083Fee70AD7`
+
+To get access to the admin functions of the contract, you can use the test governance
+contract `FlaixTestGov` but you need to be added to the list of authorized testers first. If you want to be added, please do not hesitate to contact us on Discord (see below). The address of the test governance contract is:
+
+FlaixTestGov: `0x643470b7a90D6aCF8f6A2fB3aA2C315Ae749Dfb4`
 
 There is an ERC20 token implementation deployed on the Sepolia testnet, which can be used as an underlying asset for testing. The address of the deployed token is:
 
-MockERC20: `0xf580da5f739aC1D29346FCc37Abee272b7B6dcf5`
+MockERC20: `0x15EdA4f507F0A942184A5b57E2077DCAc927dCF1`
 
 `mint()` and `burn()` functions can be used without permission to mint/burn tokens
 for/from any address.
 
 All contracts are verified by Etherscan:
 
-[FlaixVault on Etherscan](https://sepolia.etherscan.io/address/0x45fbef359a6381a5d6058554fa5d0bdd9f845559)
+[FlaixVault on Etherscan](https://sepolia.etherscan.io/address/0xBf24F7580c99Aae5A4872639E97C1083Fee70AD7)
 
-[MockERC20 on Etherscan](https://sepolia.etherscan.io/address/0xf580da5f739aC1D29346FCc37Abee272b7B6dcf5)
+[FlaixTestGov on Etherscan](https://sepolia.etherscan.io/address/0x643470b7a90D6aCF8f6A2fB3aA2C315Ae749Dfb4)
+
+[MockERC20 on Etherscan](https://sepolia.etherscan.io/address/0x15EdA4f507F0A942184A5b57E2077DCAc927dCF1)
 
 ### Project Status
 
