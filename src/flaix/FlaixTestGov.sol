@@ -42,16 +42,14 @@ contract FlaixTestGov is IFlaixGovernance, Ownable {
 
   /// @notice Allows the owner to add a tester.
   /// @param tester Address of the tester.
-  function addTester(address tester) external onlyOwner {
-    testers.add(tester);
-    emit TesterAdded(tester);
+  function addTester(address tester) public onlyOwner {
+    if (testers.add(tester)) emit TesterAdded(tester);
   }
 
   /// @notice Allows the owner to remove a tester.
   /// @param tester Address of the tester.
   function removeTester(address tester) external onlyOwner {
-    testers.remove(tester);
-    emit TesterRemoved(tester);
+    if (testers.remove(tester)) emit TesterRemoved(tester);
   }
 
   /// @notice Returns true if the address is a tester.
