@@ -40,4 +40,14 @@ contract FlaixTestGovBase_Test is FlaixVault_Test {
     flaixTestGov.allowAsset(address(asset));
     _;
   }
+
+  modifier whenUserHasAsset(
+    address user,
+    IERC20 asset,
+    uint256 amount
+  ) {
+    if (asset.balanceOf(user) >= amount) return;
+    deal(address(asset), user, amount, true);
+    _;
+  }
 }
