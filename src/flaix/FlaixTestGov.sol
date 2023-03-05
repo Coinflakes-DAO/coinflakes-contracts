@@ -6,6 +6,7 @@ import "../interfaces/IFlaixGovernance.sol";
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @title FlaixTestGov
 /// @notice Governance Contract of FlaixVault for testing purposes only.
@@ -14,6 +15,7 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 /// SHOULD NOT BE USED IN PRODUCTION.
 contract FlaixTestGov is IFlaixGovernance, Ownable {
   using EnumerableSet for EnumerableSet.AddressSet;
+  using SafeERC20 for IERC20;
 
   /// @notice Error when the caller is not a tester.
   error OnlyAllowedForTesters();
@@ -96,13 +98,13 @@ contract FlaixTestGov is IFlaixGovernance, Ownable {
   /// @inheritdoc IFlaixGovernance
   function allowAsset(address assetAddress) external onlyTesters {
     vault.allowAsset(assetAddress);
-    IERC20(assetAddress).approve(address(vault), type(uint256).max);
+    IERC20(assetAddress).safeApprove(address(vault), type(uint256).max);
   }
 
   /// @inheritdoc IFlaixGovernance
   function disallowAsset(address assetAddress) external onlyTesters {
     vault.disallowAsset(assetAddress);
-    IERC20(assetAddress).approve(address(vault), 0);
+    IERC20(assetAddress).safeApprove(address(vault), 0);
   }
 
   /// @inheritdoc IFlaixGovernance
@@ -130,7 +132,7 @@ contract FlaixTestGov is IFlaixGovernance, Ownable {
     uint256 assetAmount,
     uint256 maturityTimestamp
   ) public onlyTesters returns (address) {
-    IERC20(asset).transferFrom(msg.sender, address(this), assetAmount);
+    IERC20(asset).safeTransferFrom(msg.sender, address(this), assetAmount);
     return vault.issueCallOptions(name, symbol, sharesAmount, recipient, asset, assetAmount, maturityTimestamp);
   }
 
