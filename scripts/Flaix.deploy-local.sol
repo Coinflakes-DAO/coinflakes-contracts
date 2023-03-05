@@ -15,7 +15,7 @@ contract FlaixDeployLocal is Script {
     FlaixOptionFactory optionFactory = new FlaixOptionFactory(address(callOption), address(putOption));
 
     FlaixVault vault = new FlaixVault(address(optionFactory));
-    console.log("FlaixVault deployed at", address(vault));
+    console.log("FlaixVault deployed at: ", address(vault));
     vm.stopBroadcast();
   }
 }

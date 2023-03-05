@@ -56,43 +56,43 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
     emit AdminChanged(admin, address(0));
   }
 
-  /// @inheritdoc IFlaixVault
+  /// @inheritdoc IFlaixGovernance
   function changeAdmin(address newAdmin) public onlyAdmin {
     if (newAdmin == address(0)) revert IFlaixVault.AdminCannotBeNull();
     emit AdminChanged(newAdmin, admin);
     admin = newAdmin;
   }
 
-  /// @inheritdoc IFlaixVault
+  /// @inheritdoc IFlaixGovernance
   function changeMinimalOptionsMaturity(uint newMaturity) public onlyAdmin {
     if (newMaturity < 3 days) revert IFlaixVault.MaturityChangeBelowLimit();
     minimalOptionsMaturity = newMaturity;
   }
 
-  /// @inheritdoc IFlaixVault
+  /// @inheritdoc IFlaixGovernance
   function allowAsset(address assetAddress) public onlyAdmin {
     if (assetAddress == address(0)) revert IFlaixVault.AssetCannotBeNull();
     if (!_allowedAssets.add(assetAddress)) revert AssetAlreadyOnAllowList();
     emit AssetAllowed(assetAddress);
   }
 
-  /// @inheritdoc IFlaixVault
+  /// @inheritdoc IFlaixGovernance
   function disallowAsset(address assetAddress) public onlyAdmin {
     if (!_allowedAssets.remove(assetAddress)) revert AssetNotOnAllowList();
     emit AssetDisallowed(assetAddress);
   }
 
-  /// @inheritdoc IFlaixVault
+  /// @inheritdoc IFlaixGovernance
   function isAssetAllowed(address assetAddress) public view returns (bool) {
     return _allowedAssets.contains(assetAddress);
   }
 
-  /// @inheritdoc IFlaixVault
+  /// @inheritdoc IFlaixGovernance
   function allowedAssets() public view returns (uint256) {
     return _allowedAssets.length();
   }
 
-  /// @inheritdoc IFlaixVault
+  /// @inheritdoc IFlaixGovernance
   function allowedAsset(uint256 index) public view returns (address) {
     if (index >= _allowedAssets.length()) revert IFlaixVault.AssetIndexOutOfBounds();
     return _allowedAssets.at(index);
@@ -135,7 +135,7 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
     super._mint(account, amount);
   }
 
-  /// @inheritdoc IFlaixVault
+  /// @inheritdoc IFlaixGovernance
   function issueCallOptions(
     string memory name,
     string memory symbol,
@@ -167,7 +167,7 @@ contract FlaixVault is ERC20, IFlaixVault, ReentrancyGuard {
     return options;
   }
 
-  /// @inheritdoc IFlaixVault
+  /// @inheritdoc IFlaixGovernance
   function issuePutOptions(
     string memory name,
     string memory symbol,
