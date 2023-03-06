@@ -52,27 +52,23 @@ slither .
 
 The project is deployed on the Sepolia testnet. The addresses of the deployed contracts are:
 
-FlaixVault: `0xBf24F7580c99Aae5A4872639E97C1083Fee70AD7`
+FlaixVault: [0xBf24F7580c99Aae5A4872639E97C1083Fee70AD7](https://sepolia.etherscan.io/address/0xBf24F7580c99Aae5A4872639E97C1083Fee70AD7)
 
 To get access to the admin functions of the contract, you can use the test governance
 contract `FlaixTestGov` but you need to be added to the list of authorized testers first. If you want to be added, please do not hesitate to contact us on Discord (see below). The address of the test governance contract is:
 
-FlaixTestGov: `0x643470b7a90D6aCF8f6A2fB3aA2C315Ae749Dfb4`
+FlaixTestGov: [0x03A3Db793913F8Ae464eDC950556D1A2Af174CAe](https://sepolia.etherscan.io/address/0x03A3Db793913F8Ae464eDC950556D1A2Af174CAe)
 
-There is an ERC20 token implementation deployed on the Sepolia testnet, which can be used as an underlying asset for testing. The address of the deployed token is:
+There are some ERC20 token implementations deployed on the Sepolia testnet, which can be used as an underlying asset for testing. The addresses of the deployed tokens isare:
 
-MockERC20: `0x15EdA4f507F0A942184A5b57E2077DCAc927dCF1`
+alphaAI: [0xF6a05F0eE5a6F03094c4445F073d4F3C5A73527C](https://sepolia.etherscan.io/address/0xF6a05F0eE5a6F03094c4445F073d4F3C5A73527C)
+
+betaAI: [0x57330b118Cd86E0Cd826A200aE084a2743042E7E](https://sepolia.etherscan.io/address/0x57330b118Cd86E0Cd826A200aE084a2743042E7E)
+
+gammaAI: [0xdd3a30199A2dA74c0991f3BEc391ACcA24BbF1D9](https://sepolia.etherscan.io/address/0xdd3a30199A2dA74c0991f3BEc391ACcA24BbF1D9)
 
 `mint()` and `burn()` functions can be used without permission to mint/burn tokens
 for/from any address.
-
-All contracts are verified by Etherscan:
-
-[FlaixVault on Etherscan](https://sepolia.etherscan.io/address/0xBf24F7580c99Aae5A4872639E97C1083Fee70AD7)
-
-[FlaixTestGov on Etherscan](https://sepolia.etherscan.io/address/0x643470b7a90D6aCF8f6A2fB3aA2C315Ae749Dfb4)
-
-[MockERC20 on Etherscan](https://sepolia.etherscan.io/address/0x15EdA4f507F0A942184A5b57E2077DCAc927dCF1)
 
 ### Project Status
 
