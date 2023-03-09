@@ -59,7 +59,7 @@ contract `FlaixTestGov` but you need to be added to the list of authorized teste
 
 FlaixTestGov: [0x03A3Db793913F8Ae464eDC950556D1A2Af174CAe](https://sepolia.etherscan.io/address/0x03A3Db793913F8Ae464eDC950556D1A2Af174CAe)
 
-There are some ERC20 token implementations deployed on the Sepolia testnet, which can be used as an underlying asset for testing. The addresses of the deployed tokens isare:
+There are some ERC20 token implementations deployed on the Sepolia testnet, which can be used as an underlying asset for testing. The addresses of the deployed tokens are:
 
 alphaAI: [0xF6a05F0eE5a6F03094c4445F073d4F3C5A73527C](https://sepolia.etherscan.io/address/0xF6a05F0eE5a6F03094c4445F073d4F3C5A73527C)
 
