@@ -17,6 +17,13 @@
 		},
 		{
 			"type": "shell",
+			"command": "source .env && forge test -vvv --fork-url $ARBITRUM_FORK_URL --mp \"test/bmx/**/*\"",
+			"problemMatcher": [],
+			"label": "forge: test BMX protocol",
+			"detail": "Run forge test command for BMX protocol only",
+		},
+		{
+			"type": "shell",
 			"command": "anvil --accounts 2 --balance 300",
 			"problemMatcher": [],
 			"label": "anvil: start",
