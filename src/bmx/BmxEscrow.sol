@@ -3,7 +3,7 @@ pragma solidity ^0.8.16;
 
 import "@openzeppelin-upgradeable/contracts/proxy/utils/Initializable.sol";
 
-import "./IGmxRewardRouter.sol";
+import "./gmx/IRewardRouter.sol";
 import "../interfaces/IBmx.sol";
 
 contract BmxEscrow is Initializable {
@@ -21,7 +21,14 @@ contract BmxEscrow is Initializable {
   function acceptTransfer(address _sender, uint256 _tokenId) external {
     require(msg.sender == address(bmx), "BmxAccountEscrow: Only BMX can call this function");
     tokenId = _tokenId;
-    IGmxRewardRouter gmxRewardRouter = IGmxRewardRouter(bmx.gmxRewardRouter());
-    IGmxRewardRouter(gmxRewardRouter).acceptTransfer(_sender);
+    _rewardRouter().acceptTransfer(_sender);
+  }
+
+  function compound() public {
+    _rewardRouter().compound();
+  }
+
+  function _rewardRouter() internal view returns (IRewardRouter) {
+    return IRewardRouter(bmx.gmxRewardRouter());
   }
 }

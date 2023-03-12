@@ -27,7 +27,7 @@ contract Base_Test is Test {
     setUp_tokens();
   }
 
-  function setUp_users() public {
+  function setUp_users() public virtual {
     users = Users({
       deployer: makeAddr("deployer"),
       admin: makeAddr("admin"),
@@ -36,7 +36,7 @@ contract Base_Test is Test {
     });
   }
 
-  function setUp_tokens() public {
+  function setUp_tokens() public virtual {
     tokens = Tokens({dai: new MockERC20("Dai Stablecoin", "DAI", 18), usdc: new MockERC20("USD Coin", "USDC", 6)});
   }
 }
