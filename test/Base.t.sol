@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "../src/utils/MockERC20.sol";
+import "@test/mocks/MockERC20.sol";
 
 contract Base_Test is Test {
   struct Users {

@@ -18,9 +18,9 @@ The DAO is meant to maintain different funds and strategies, each of which is ba
 The project is based on [Foundry](https://github.com/foundry-rs/foundry), a framework for building and deploying smart contracts on the Ethereum blockchain.
 
 - [src](src) - smart contracts.
+  - [bmx](src/bmx) - smart contracts for the BMX token (liquid esGMX).
   - [flaix](src/flaix) - smart contracts for the AI investment fund (FLAIX token).
   - [interfaces](src/interfaces) - interfaces for the inclusion in other projects.
-  - [utils](src/utils) - utility contracts for testing etc.
 
 ### Installation
 

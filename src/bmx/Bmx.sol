@@ -40,9 +40,9 @@ contract BMX is IBmx, ERC721, Ownable {
   function mint(address to) public {
     require(address(pendingEscrows[msg.sender]) != address(0), "BMX: sender does not have a pending escrow");
     IBmxEscrow escrow = IBmxEscrow(pendingEscrows[msg.sender]);
+    delete pendingEscrows[msg.sender];
     tokenIds.increment();
     uint256 tokenId = tokenIds.current();
-    delete pendingEscrows[msg.sender];
     escrows[tokenId] = address(escrow);
     escrow.acceptTransfer(msg.sender, tokenId);
     _mint(to, tokenId);
@@ -102,9 +102,5 @@ contract BMX is IBmx, ERC721, Ownable {
     require(_exists(tokenId), "BMX: nonexistent token");
     IRewardTracker feeGmxTracker = IRewardTracker(gmxRewardRouter.feeGmxTracker());
     return feeGmxTracker.claimable(escrows[tokenId]);
-  }
-
-  function compound(uint256 tokenId) public onlyOwner {
-    IBmxEscrow(escrows[tokenId]).compound();
   }
 }

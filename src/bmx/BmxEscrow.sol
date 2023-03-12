@@ -26,10 +26,6 @@ contract BmxEscrow is IBmxEscrow, Initializable {
     _rewardRouter().acceptTransfer(sender);
   }
 
-  function compound() public {
-    _rewardRouter().compound();
-  }
-
   function _rewardRouter() internal view returns (IRewardRouter) {
     return IRewardRouter(bmx.gmxRewardRouter());
   }

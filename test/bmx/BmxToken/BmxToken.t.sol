@@ -3,7 +3,6 @@ pragma solidity ^0.8.16;
 
 import "@src/bmx/gmx/IRewardRouter.sol";
 import "@src/bmx/gmx/IRewardTracker.sol";
-import "@src/bmx/gmx/IBaseToken.sol";
 import "../BmxBase.t.sol";
 
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
@@ -19,10 +18,6 @@ contract BmxToken_Test is BmxBase_Test {
     address gmx = gmxRewardRouter.gmx();
     address esGmx = gmxRewardRouter.esGmx();
     address bnGmx = gmxRewardRouter.bnGmx();
-
-    log_BaseToken(IBaseToken(gmx), gmxUser1);
-    log_BaseToken(IBaseToken(esGmx), gmxUser1);
-    log_BaseToken(IBaseToken(bnGmx), gmxUser1);
 
     IRewardTracker stakedTracker = IRewardTracker(gmxRewardRouter.stakedGmxTracker());
     log_RewardTracker(stakedTracker, gmxUser1, gmx);
@@ -57,17 +52,9 @@ contract BmxToken_Test is BmxBase_Test {
   function log_RewardTracker(IRewardTracker tracker, address account, address asset) public {
     emit log("----");
     emit log_named_string("name(): ", IERC20Metadata(address(tracker)).name());
+    emit log_named_string("symbol(): ", IERC20Metadata(address(tracker)).symbol());
     emit log_named_string("asset: ", IERC20Metadata(address(asset)).symbol());
     emit log_named_decimal_uint("depositedBalances(): ", tracker.depositBalances(account, asset), 18);
-    emit log_named_decimal_uint("stakedAmounts(): ", tracker.stakedAmounts(account), 18);
     emit log_named_decimal_uint("claimable(): ", tracker.claimable(account), 18);
-  }
-
-  function log_BaseToken(IBaseToken token, address account) public {
-    emit log("----");
-    emit log_named_string("name(): ", IERC20Metadata(address(token)).name());
-    emit log_named_address("address: ", address(token));
-    emit log_named_decimal_uint("balanceOf(): ", IERC20Metadata(address(token)).balanceOf(account), 18);
-    emit log_named_decimal_uint("stakedBalance(): ", token.stakedBalance(account), 18);
   }
 }

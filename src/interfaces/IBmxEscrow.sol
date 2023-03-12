@@ -5,6 +5,4 @@ interface IBmxEscrow {
   function initialize(address _bmx) external;
 
   function acceptTransfer(address sender, uint256 _tokenId) external;
-
-  function compound() external;
 }

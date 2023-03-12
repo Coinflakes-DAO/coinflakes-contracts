@@ -7,7 +7,7 @@ import "@src/flaix/FlaixCallOption.sol";
 import "@src/flaix/FlaixPutOption.sol";
 import "@src/flaix/FlaixOptionFactory.sol";
 import "@src/flaix/FlaixTestGov.sol";
-import "@src/utils/MockERC20.sol";
+import "@test/mocks/MockERC20.sol";
 
 contract FlaixDeploySepolia is Script {
   function run() public {
