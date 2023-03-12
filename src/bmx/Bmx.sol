@@ -19,11 +19,11 @@ contract BMX is IBmx, ERC721, Ownable {
   IRewardRouter public gmxRewardRouter = IRewardRouter(0xA906F338CB21815cBc4Bc87ace9e68c87eF8d8F1);
   address public immutable bmxEscrowImplementation;
 
-  mapping(address => IBmxEscrow) private _pendingEscrows;
+  mapping(address => IBmxEscrow) public pendingEscrows;
 
   mapping(uint256 => address) public escrows;
 
-  Counters.Counter private _tokenIds;
+  Counters.Counter private tokenIds;
 
   event CreateEscrow(address indexed escrow, address indexed owner);
 
@@ -32,36 +32,33 @@ contract BMX is IBmx, ERC721, Ownable {
     _;
   }
 
-  constructor(address _escrowImpl) ERC721("BMX Token (esGMX Wrapper)", "BMX") {
-    bmxEscrowImplementation = _escrowImpl;
+  constructor(address escrowImpl) ERC721("BMX Token (esGMX Wrapper)", "BMX") {
+    require(escrowImpl != address(0), "BMX: escrow implementation cannot be zero address");
+    bmxEscrowImplementation = escrowImpl;
   }
 
   function mint(address to) public {
-    require(address(_pendingEscrows[msg.sender]) != address(0), "BMX: sender does not have a pending escrow");
-    IBmxEscrow escrow = IBmxEscrow(_pendingEscrows[msg.sender]);
-    _tokenIds.increment();
-    uint256 tokenId = _tokenIds.current();
-    escrow.acceptTransfer(msg.sender, tokenId);
-    delete _pendingEscrows[msg.sender];
+    require(address(pendingEscrows[msg.sender]) != address(0), "BMX: sender does not have a pending escrow");
+    IBmxEscrow escrow = IBmxEscrow(pendingEscrows[msg.sender]);
+    tokenIds.increment();
+    uint256 tokenId = tokenIds.current();
+    delete pendingEscrows[msg.sender];
     escrows[tokenId] = address(escrow);
+    escrow.acceptTransfer(msg.sender, tokenId);
     _mint(to, tokenId);
   }
 
   function createEscrow() public returns (address) {
-    require(address(_pendingEscrows[msg.sender]) == address(0), "BMX: sender already has a pending escrow");
-    IBmxEscrow _escrow = IBmxEscrow(bmxEscrowImplementation.clone());
-    _escrow.initialize(address(this));
-    _pendingEscrows[msg.sender] = _escrow;
-    emit CreateEscrow(address(_escrow), msg.sender);
-    return address(_escrow);
+    require(address(pendingEscrows[msg.sender]) == address(0), "BMX: sender already has a pending escrow");
+    IBmxEscrow escrow = IBmxEscrow(bmxEscrowImplementation.clone());
+    pendingEscrows[msg.sender] = escrow;
+    emit CreateEscrow(address(escrow), msg.sender);
+    escrow.initialize(address(this));
+    return address(escrow);
   }
 
-  function getPendingEscrow(address sender) public view returns (address) {
-    return address(_pendingEscrows[sender]);
-  }
-
-  function setGmxRewardRouter(address _gmxRewardRouter) public onlyOwner {
-    gmxRewardRouter = IRewardRouter(_gmxRewardRouter);
+  function setGmxRewardRouter(address gmxRewardRouter_) public onlyOwner {
+    gmxRewardRouter = IRewardRouter(gmxRewardRouter_);
   }
 
   function stakedGmxBalance(uint256 tokenId) public view returns (uint256) {

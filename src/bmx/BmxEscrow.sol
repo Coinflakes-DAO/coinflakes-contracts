@@ -4,9 +4,11 @@ pragma solidity ^0.8.16;
 import "@openzeppelin-upgradeable/contracts/proxy/utils/Initializable.sol";
 
 import "./gmx/IRewardRouter.sol";
-import "../interfaces/IBmx.sol";
 
-contract BmxEscrow is Initializable {
+import "../interfaces/IBmx.sol";
+import "../interfaces/IBmxEscrow.sol";
+
+contract BmxEscrow is IBmxEscrow, Initializable {
   uint256 public tokenId;
   IBmx public bmx;
 
@@ -14,14 +16,14 @@ contract BmxEscrow is Initializable {
     tokenId = 0;
   }
 
-  function initialize(address _bmx) public initializer {
-    bmx = IBmx(_bmx);
+  function initialize(address bmxToken) public initializer {
+    bmx = IBmx(bmxToken);
   }
 
-  function acceptTransfer(address _sender, uint256 _tokenId) external {
+  function acceptTransfer(address sender, uint256 tokenId_) external {
     require(msg.sender == address(bmx), "BmxAccountEscrow: Only BMX can call this function");
-    tokenId = _tokenId;
-    _rewardRouter().acceptTransfer(_sender);
+    tokenId = tokenId_;
+    _rewardRouter().acceptTransfer(sender);
   }
 
   function compound() public {
