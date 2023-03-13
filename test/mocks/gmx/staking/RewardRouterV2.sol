@@ -13,7 +13,7 @@ import "@src/interfaces/gmx/staking/IVester.sol";
 import "@src/interfaces/gmx/tokens/IMintable.sol";
 import "@src/interfaces/gmx/tokens/IWETH.sol";
 import "@src/interfaces/gmx/core/IGlpManager.sol";
-import "../access/Governable.sol";
+import "@test/mocks/gmx/access/Governable.sol";
 
 contract RewardRouterV2 is IRewardRouterV2, ReentrancyGuard, Governable {
   using SafeMath for uint256;

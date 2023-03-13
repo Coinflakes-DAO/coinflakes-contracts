@@ -20,22 +20,22 @@ contract BmxToken_Test is BmxBase_Test {
     address bnGmx = gmxRewardRouter.bnGmx();
 
     IRewardTracker stakedTracker = IRewardTracker(gmxRewardRouter.stakedGmxTracker());
-    log_RewardTracker(stakedTracker, gmxUser1, gmx);
-    log_RewardTracker(stakedTracker, gmxUser1, esGmx);
+    log_RewardTracker(stakedTracker, users.alice, gmx);
+    log_RewardTracker(stakedTracker, users.alice, esGmx);
 
     IRewardTracker bonusTracker = IRewardTracker(gmxRewardRouter.bonusGmxTracker());
-    log_RewardTracker(bonusTracker, gmxUser1, address(stakedTracker));
+    log_RewardTracker(bonusTracker, users.alice, address(stakedTracker));
 
     IRewardTracker feeTracker = IRewardTracker(gmxRewardRouter.feeGmxTracker());
-    log_RewardTracker(feeTracker, gmxUser1, address(bonusTracker));
-    log_RewardTracker(feeTracker, gmxUser1, address(bnGmx));
+    log_RewardTracker(feeTracker, users.alice, address(bonusTracker));
+    log_RewardTracker(feeTracker, users.alice, address(bnGmx));
 
-    vm.startPrank(gmxUser1);
+    vm.startPrank(users.alice);
     address escrow = bmx.createEscrow();
     gmxRewardRouter.signalTransfer(escrow);
-    bmx.mint(gmxUser1);
+    bmx.mint(users.alice);
     vm.stopPrank();
-    assertEq(bmx.balanceOf(gmxUser1), 1);
+    assertEq(bmx.balanceOf(users.alice), 1);
     assertEq(bmx.escrows(1), escrow);
 
     emit log("----");

@@ -32,8 +32,9 @@ contract BMX is IBmx, ERC721, Ownable {
     _;
   }
 
-  constructor(address escrowImpl) ERC721("BMX Token (esGMX Wrapper)", "BMX") {
+  constructor(address gmxRewardRouter_, address escrowImpl) ERC721("BMX Token (esGMX Wrapper)", "BMX") {
     require(escrowImpl != address(0), "BMX: escrow implementation cannot be zero address");
+    gmxRewardRouter = IRewardRouterV2(gmxRewardRouter_);
     bmxEscrowImplementation = escrowImpl;
   }
 
