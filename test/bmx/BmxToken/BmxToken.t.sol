@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.16;
 
-import "@src/bmx/gmx/IRewardRouter.sol";
-import "@src/bmx/gmx/IRewardTracker.sol";
+import "@src/interfaces/gmx/staking/IRewardRouterV2.sol";
+import "@src/interfaces/gmx/staking/IRewardTracker.sol";
 import "../BmxBase.t.sol";
 
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
@@ -13,7 +13,7 @@ contract BmxToken_Test is BmxBase_Test {
   }
 
   function test_firstTry() public {
-    IRewardRouter gmxRewardRouter = IRewardRouter(bmx.gmxRewardRouter());
+    IRewardRouterV2 gmxRewardRouter = IRewardRouterV2(bmx.gmxRewardRouter());
 
     address gmx = gmxRewardRouter.gmx();
     address esGmx = gmxRewardRouter.esGmx();

@@ -2,10 +2,10 @@
 pragma solidity ^0.8.16;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "../bmx/gmx/IRewardRouter.sol";
+import "@src/interfaces/gmx/staking/IRewardRouterV2.sol";
 
 interface IBmx is IERC721 {
-  function gmxRewardRouter() external view returns (IRewardRouter);
+  function gmxRewardRouter() external view returns (IRewardRouterV2);
 
   function mint(address to) external;
 

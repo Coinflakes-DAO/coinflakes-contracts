@@ -9,14 +9,14 @@ import "@openzeppelin/contracts/proxy/Clones.sol";
 import "@src/interfaces/IBmx.sol";
 import "@src/interfaces/IBmxEscrow.sol";
 
-import "@src/bmx/gmx/IRewardRouter.sol";
-import "@src/bmx/gmx/IRewardTracker.sol";
+import "@src/interfaces/gmx/staking/IRewardTracker.sol";
+import "@src/interfaces/gmx/staking/IRewardRouterV2.sol";
 
 contract BMX is IBmx, ERC721, Ownable {
   using Clones for address;
   using Counters for Counters.Counter;
 
-  IRewardRouter public gmxRewardRouter = IRewardRouter(0xA906F338CB21815cBc4Bc87ace9e68c87eF8d8F1);
+  IRewardRouterV2 public gmxRewardRouter = IRewardRouterV2(0xA906F338CB21815cBc4Bc87ace9e68c87eF8d8F1);
   address public immutable bmxEscrowImplementation;
 
   mapping(address => IBmxEscrow) public pendingEscrows;
@@ -58,7 +58,7 @@ contract BMX is IBmx, ERC721, Ownable {
   }
 
   function setGmxRewardRouter(address gmxRewardRouter_) public onlyOwner {
-    gmxRewardRouter = IRewardRouter(gmxRewardRouter_);
+    gmxRewardRouter = IRewardRouterV2(gmxRewardRouter_);
   }
 
   function stakedGmxBalance(uint256 tokenId) public view returns (uint256) {

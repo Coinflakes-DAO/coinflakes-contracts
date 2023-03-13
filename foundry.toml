@@ -5,6 +5,7 @@ script = 'scripts'
 libs = ['lib']
 allow_paths = ['lib']
 solc = "0.8.16"
+viaIR = true
 
 [rpc_endpoints]
 SEPOLIA = "${SEPOLIA_RPC_URL}"
